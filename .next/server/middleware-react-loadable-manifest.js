@@ -1,1 +1,0 @@
-self.__REACT_LOADABLE_MANIFEST='{"app\\\\page.js -> @/components/Available":{"id":6730,"files":["static/chunks/730.06333b46a9eb6110.js"]},"app\\\\page.js -> @/components/Bottom":{"id":6220,"files":["static/chunks/220.a64e667dd2a2141c.js"]}}';
