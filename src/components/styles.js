@@ -72,12 +72,23 @@ export const navLinkButtonStyles = {
   fontSize: "14px",
   fontFamily: '"Metropolis", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"'
 };
-
+export const contactButtonStyles1 = {
+  height: "32px",
+  width: "100%",
+  color: 'white',
+  backgroundColor: "#FF7E5F",
+  padding: "3.5px 35px",
+  fontSize: "12px",
+  fontWeight: "bold", '&:hover': {
+    background: 'red', 
+  },
+ 
+};
 export const contactButtonStyles = {
   height: "32px",
-  width: "108px",
+  width: "208px",
   color: 'white',
-  backgroundColor: "#ff645A",
+  backgroundColor: "#FF7E5F",
   padding: "3.5px 35px",
   fontSize: "12px",
   fontWeight: "bold", '&:hover': {
@@ -86,11 +97,17 @@ export const contactButtonStyles = {
   display:{xs:"none",md:"flex"}
 };
 export const head={
-color:"#ff645a",
+color:"#FF7E5F",
 fontSize:"16px",
 marginBottom:"0.5rem",
 fontWeight:"bold",
 }
+export const head1={
+  color:"#FF7E5F",
+  fontSize:"16px",
+  marginBottom:"0.5rem",
+  fontWeight:"bold",
+  }
 export const element={
   color:"#666",
   cursor:"pointer",

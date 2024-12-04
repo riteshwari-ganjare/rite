@@ -14,14 +14,33 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
+// export const metadata = {
+//   title: "Free table reservation with discounts and offers in Nagpur",
+//   description: "Book a table with discounts and exclusive offers in Nagpur.",
+//   icons: {
+//     icon: "/download.png", 
+//   },
+// };
 export const metadata = {
-  title: "Free table reservation with discounts and offers in Nagpur",
-  description: "Book a table with discounts and exclusive offers in Nagpur.",
+  title: 'Riteshwari Ganjare',
+  description: 'Royal solution for websites and softwares',
   icons: {
-    icon: "/download.png", 
+        icon: "/download.png", 
+      },
+  keywords: ['riteshwari', 'seo', 'web development',"ritu"],
+  openGraph: {
+    title: 'Riteshwari Royal Solution',
+    description: 'Providing Royal solution for websites and softwares',
+    url: 'https://rite-mpvt-riteshwaris-projects.vercel.app/',
+    image: 'https://your-site.com/og-image.jpg',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Your Website Title',
+    description: 'Description of your website for SEO',
+    image: '/download.png',
   },
 };
-
 export default function RootLayout({ children }) {
   return (
     <html lang="en">

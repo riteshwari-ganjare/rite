@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     images: {
-      domains: ['im1.dineout.co.in'],
+      domains: ['im1.dineout.co.in',"icecreamfromscratch.com","encrypted-tbn0.gstatic.com","www.skymsen.com"],
     },
     reactStrictMode: true,
     i18n: {

@@ -1,104 +1,200 @@
 "use client";
-import * as React from 'react';
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
-import Button from '@mui/material/Button';
-import Link from 'next/link';
-import * as styles from './styles';  
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import OutlinedInput from '@mui/material/OutlinedInput';
-import { MenuItem, Select, FormControl } from '@mui/material';
-import Image from 'next/image';
+import * as React from "react";
+import AppBar from "@mui/material/AppBar";
+import Box from "@mui/material/Box";
+import Toolbar from "@mui/material/Toolbar";
+import Typography from "@mui/material/Typography";
+import Container from "@mui/material/Container";
+import Button from "@mui/material/Button";
+import Link from "next/link";
+import * as styles from "./styles";
+import { IconButton, Drawer } from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu"; // Hamburger Icon
+import CloseIcon from "@mui/icons-material/Close"; // Cross Icon
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { Phone as PhoneIcon, LocationOn as LocationIcon } from "@mui/icons-material";
 
-const pages = ['Home', 'Book a Table', 'Blog'];
+const pages = ["Home", "About", "Service", "Contact Us"];
 
 function ResponsiveAppBar() {
-  const [anchorElNav, setAnchorElNav] = React.useState(null);
-  const [selectedPage, setSelectedPage] = React.useState('Home');
-
-  const handleOpenNavMenu = (event) => {
-    setAnchorElNav(event.currentTarget);
+  const [selectedPage, setSelectedPage] = React.useState("Home");
+  const [openMobileMenu, setOpenMobileMenu] = React.useState(false); // Mobile menu state
+  const router = useRouter();
+  const handleLoginClick = () => {
+    router.push("/login");
   };
 
-  const handleCloseNavMenu = () => {
-    setAnchorElNav(null);
+  const handleMobileMenuOpen = () => {
+    setOpenMobileMenu(true);
+  };
+
+  const handleMobileMenuClose = () => {
+    setOpenMobileMenu(false);
+  };
+
+  const handlePageSelect = (page) => {
+    setSelectedPage(page);
+    setOpenMobileMenu(false); // Close the mobile menu after selecting a page
   };
 
   return (
-    <AppBar position="static" sx={styles.appBarStyles}>
-      <Container maxWidth="xl">
-        <Toolbar disableGutters>
-          <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
-            <Typography variant="h6" noWrap component="a" href="/" sx={styles.logoStylesLarge}>
-              <Image
-                src="https://im1.dineout.co.in/images/uploads/misc/2023/Jun/19/swiggy_dineout_logo.png"
-                alt="Logo"
-                width={125}
-                height={38.78}
-                layout="intrinsic"
-              />
-            </Typography>
-            <Typography variant="h5" noWrap component="a" href="/" sx={styles.logoStylesSmall}>
-              <Image
-                src="https://im1.dineout.co.in/images/uploads/misc/2023/Jun/19/swiggy_dineout_logo.png"
-                alt="Logo"
-                width={110}
-                height={35}
-                layout="intrinsic"
-              />
-            </Typography>
-            <FormControl sx={{ minWidth: 220, ml: 3, height: 35 }} size="small">
-              <Select
-                displayEmpty
-                input={<OutlinedInput sx={{ height: 35, padding: '0px 0px', fontSize: '12px' }} />}
-                renderValue={() => (
-                  <span style={{ display: 'flex', alignItems: 'center', color: 'gray', fontSize: '12px' }}>
-                    <LocationOnIcon sx={{ mr: 1, color: 'gray', fontSize: "14px" }} />
-                    <em>Select Location</em>
-                  </span>
-                )}
-                inputProps={{ 'aria-label': 'Location' }}
+    <>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "left",
+          textAlign: "left",
+          p: 1,
+          paddingBottom: "10px",
+          justifyContent: "space-between",
+          background: "#f6f6f6",
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+          <LocationIcon sx={{ color: "#000", fontSize: "16px" }} />
+          <Typography
+            variant="body2"
+            sx={{
+              color: "#000",
+              fontSize: "12px",
+              fontWeight: "bold",
+            }}
+          >
+            Katol, Nagpur, Maharashtra - 441302
+          </Typography>
+        </Box>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+          <PhoneIcon sx={{ color: "#000", fontSize: "16px" }} />
+          <Typography
+            variant="body2"
+            sx={{
+              color: "#000",
+              fontSize: "12px",
+              fontWeight: "bold",
+            }}
+          >
+            Call us at +1 234 567 890
+          </Typography>
+        </Box>
+      </Box>
+      <AppBar position="static" sx={styles.appBarStyles}>
+        <Container maxWidth="xl">
+          <Toolbar disableGutters>
+            <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center", width: "100%" }}>
+              <Typography variant="h6" noWrap component="a" href="/" sx={styles.logoStylesLarge}>
+                <Image src="/logo.png" alt="Logo" width={155} height={45.78} layout="intrinsic" />
+              </Typography>
+              <Typography variant="h5" noWrap component="a" href="/" sx={styles.logoStylesSmall}>
+                <Image src="/logo.png" alt="Logo" width={110} height={35} layout="intrinsic" />
+              </Typography>
+
+              <Box
+                sx={{
+                  flexGrow: 1,
+                  display: { xs: "none", md: "flex" },
+                  justifyContent: "space-evenly",
+                }}
               >
-                <MenuItem disabled value="">
-                  <em>Select Location</em>
-                </MenuItem>
-              </Select>
-            </FormControl>
+                {pages.map((page) => (
+                  <Link
+                    href={
+                      page.toLowerCase() === "home"
+                        ? "/"
+                        : `/${page.toLowerCase().replace(/\s+/g, "")}`
+                    }
+                    key={page}
+                    passHref
+                  >
+                    <Button
+                      onClick={() => handlePageSelect(page)}
+                      sx={{
+                        ...styles.navLinkButtonStyles,
+                        color: selectedPage === page ? "#FF7E5F" : "inherit",
+                        transition: "color 0.3s ease",
+                        "&:hover": { color: "#FF7E5F" },
+                      }}
+                    >
+                      {page}
+                    </Button>
+                  </Link>
+                ))}
+              </Box>
 
-          </Box>
+              <Box sx={{ flexGrow: 0 }}>
+                <Link href="/login" passHref>
+                  <Button sx={styles.contactButtonStyles}>Log In</Button>
+                </Link>
+              </Box>
 
-          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, justifyContent: "space-around" }}>
+              <Box sx={{ flexGrow: 0, display: { xs: "flex", md: "none" } }}>
+                <IconButton size="large" aria-label="mobile menu" color="inherit" onClick={handleMobileMenuOpen}>
+                  <MenuIcon />
+                </IconButton>
+              </Box>
+            </Box>
+          </Toolbar>
+        </Container>
+
+        <Drawer
+          anchor="right"
+          open={openMobileMenu}
+          onClose={handleMobileMenuClose}
+          sx={{
+            width: "250px",
+            flexShrink: 0,
+            "& .MuiDrawer-paper": {
+              width: "250px",
+              backgroundColor: "#333",
+              color: "white",
+              padding: "20px",
+              transition: "transform 0.3s ease, opacity 0.3s ease",
+            },
+          }}
+        >
+          <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+            <IconButton
+              edge="start"
+              color="inherit"
+              onClick={handleMobileMenuClose}
+              sx={{ alignSelf: "flex-end", marginBottom: "20px" }}
+            >
+              <CloseIcon />
+            </IconButton>
+
             {pages.map((page) => (
               <Link
-                href={page.toLowerCase() === "home" ? "/" : `/${page.toLowerCase().replace(/\s+/g, "")}`}
+                href={
+                  page.toLowerCase() === "home"
+                    ? "/"
+                    : `/${page.toLowerCase().replace(/\s+/g, "")}`
+                }
                 key={page}
                 passHref
               >
                 <Button
-                  onClick={() => setSelectedPage(page)}
+                  onClick={() => handlePageSelect(page)}
                   sx={{
                     ...styles.navLinkButtonStyles,
-                    color: selectedPage === page ? 'red' : 'inherit',
-                    '&:hover': { color: 'red' },
+                    color: selectedPage === page ? "#FF7E5F" : "white",
+                    marginBottom: "20px",
+                    transition: "color 0.3s ease",
+                    "&:hover": { color: "#FF7E5F" },
                   }}
                 >
                   {page}
                 </Button>
               </Link>
             ))}
-          </Box>
 
-          <Box sx={{ flexGrow: 0 }}>
-            <Link href="/" passHref>
-              <Button sx={styles.contactButtonStyles}>Login</Button>
-            </Link>
+            <Button sx={styles.contactButtonStyles} onClick={handleLoginClick}>
+              Login
+            </Button>
           </Box>
-        </Toolbar>
-      </Container>
-    </AppBar>
+        </Drawer>
+      </AppBar>
+    </>
   );
 }
 
