@@ -17,7 +17,6 @@ const headerStyle = {
   fontSize: '18px',
   color: '#000',
   marginBottom: '10px',
-  
 };
 
 const addressStyle = {
@@ -26,7 +25,6 @@ const addressStyle = {
   fontSize: '16px',
   lineHeight: '1.6', // Adjust this value for line spacing
 };
-
 
 const socialMediaLinks = [
   {
@@ -117,37 +115,40 @@ const Footer = () => {
     <footer>
       <Divider sx={{ width: '100%', mb: 2 }} />
       <Container sx={{ padding: '60px' }}>
-      <Box
-  sx={{
-    display: 'flex',
-    flexDirection: 'column',
-    textAlign: { xs: 'center', md: 'left' }, // Center text only for xs
-    alignItems: { xs: 'center', md: 'flex-start' }, // Center items for xs
-    paddingBottom: '10px',
-  }}
->
-  <Grid container sx={{ width: '100%', justifyContent: { xs: 'center', md: 'flex-start' } }}>
-    <Grid item xs={12} md={3} sx={{ padding: '10px 0' }}>
-      <Typography sx={headerStyle}>
-        <Image src="/logo.png" alt="Logo" width={155} height={45.78} layout="intrinsic" />
-      </Typography>
-      <address style={addressStyle}>"Your trusted partner for growth and collaboration."</address>
-    </Grid>
-    <Grid item xs={12} md={3} sx={{ padding: '10px 0' }}>
-      <Typography sx={headerStyle}>Address</Typography>
-      <address style={addressStyle}>Katol, Nagpur,<br /> Maharashtra, India <br />- 441302</address>
-    </Grid>
-    <Grid item xs={12} md={3} sx={{ padding: '10px 0' }}>
-      <Typography sx={headerStyle}>Links</Typography>
-      <NavLinks />
-    </Grid>
-    <Grid item xs={12} md={3} sx={{ padding: '10px 0' }}>
-      <Typography sx={headerStyle}>Follow us:</Typography>
-      <SocialMediaIcons />
-    </Grid>
-  </Grid>
-</Box>
-
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            textAlign: { xs: 'center', md: 'left' }, // Center text only for xs
+            alignItems: { xs: 'center', md: 'flex-start' }, // Center items for xs
+            paddingBottom: '10px',
+          }}
+        >
+          <Grid container sx={{ width: '100%', justifyContent: { xs: 'center', md: 'flex-start' } }}>
+            <Grid item xs={12} md={3} sx={{ padding: '10px 0' }}>
+              <Typography sx={headerStyle}>
+                <Image src="/logo.png" alt="Logo" width={155} height={45.78} layout="intrinsic" />
+              </Typography>
+              <address style={addressStyle}>&quot;Your trusted partner for growth and collaboration.&quot;</address>
+            </Grid>
+            <Grid item xs={12} md={3} sx={{ padding: '10px 0' }}>
+              <Typography sx={headerStyle}>Address</Typography>
+              <address style={addressStyle}>
+                Katol, Nagpur,
+                <br /> Maharashtra, India <br />
+                - 441302
+              </address>
+            </Grid>
+            <Grid item xs={12} md={3} sx={{ padding: '10px 0' }}>
+              <Typography sx={headerStyle}>Links</Typography>
+              <NavLinks />
+            </Grid>
+            <Grid item xs={12} md={3} sx={{ padding: '10px 0' }}>
+              <Typography sx={headerStyle}>Follow us:</Typography>
+              <SocialMediaIcons />
+            </Grid>
+          </Grid>
+        </Box>
       </Container>
       <Divider sx={{ width: '100%' }} />
       <Container>

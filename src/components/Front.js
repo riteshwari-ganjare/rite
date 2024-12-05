@@ -200,7 +200,7 @@ const Front = ({ images, items }) => {
                   color: "#FF7E5F",
                 }}
               >
-                Don't Miss the Timing
+                Don&apos;t Miss the Timing
               </Typography>
 
               <Typography

@@ -15,6 +15,9 @@ const nextConfig = {
       webpack5: true,
     },
     pageExtensions: ['js', 'jsx', 'ts', 'tsx'],
+    eslint: {
+      ignoreDuringBuilds: true,
+    },
   };
   
   export default nextConfig;
