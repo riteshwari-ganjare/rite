@@ -1,22 +1,23 @@
 "use client";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Box, Typography, TextField, Button } from "@mui/material";
+import { Box, Typography, TextField, Button, MenuItem, Select, InputLabel, FormControl, Grid, Divider, InputAdornment } from "@mui/material";
+import { Email, Lock } from "@mui/icons-material"; // Import icons
 
 // Temporary storage for registered users
 const users = [];
 
 const LoginPage = () => {
   const [isRegister, setIsRegister] = useState(false);
-  const [formData, setFormData] = useState({ name: "", email: "", password: "" });
-  const [errors, setErrors] = useState({ name: "", email: "", password: "" });
+  const [formData, setFormData] = useState({ name: "", email: "", password: "", category: "" });
+  const [errors, setErrors] = useState({ name: "", email: "", password: "", category: "" });
 
   const router = useRouter(); // Initialize useRouter
 
   const toggleForm = () => {
     setIsRegister(!isRegister);
-    setFormData({ name: "", email: "", password: "" });
-    setErrors({ name: "", email: "", password: "" });
+    setFormData({ name: "", email: "", password: "", category: "" });
+    setErrors({ name: "", email: "", password: "", category: "" });
   };
 
   const validateEmail = (email) =>
@@ -27,6 +28,8 @@ const LoginPage = () => {
 
   const validateName = (name) => (name.trim() ? "" : "Name is required.");
 
+  const validateCategory = (category) => (category ? "" : "Business category is required.");
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -35,6 +38,7 @@ const LoginPage = () => {
     if (name === "email") setErrors({ ...errors, email: validateEmail(value) });
     if (name === "password") setErrors({ ...errors, password: validatePassword(value) });
     if (name === "name") setErrors({ ...errors, name: validateName(value) });
+    if (name === "category") setErrors({ ...errors, category: validateCategory(value) });
   };
 
   const handleSubmit = (e) => {
@@ -42,16 +46,17 @@ const LoginPage = () => {
     const emailError = validateEmail(formData.email);
     const passwordError = validatePassword(formData.password);
     const nameError = isRegister ? validateName(formData.name) : "";
+    const categoryError = isRegister ? validateCategory(formData.category) : "";
 
-    setErrors({ name: nameError, email: emailError, password: passwordError });
+    setErrors({ name: nameError, email: emailError, password: passwordError, category: categoryError });
 
-    if (!emailError && !passwordError && !nameError) {
+    if (!emailError && !passwordError && !nameError && !categoryError) {
       if (isRegister) {
         // Check if the user already exists
         if (users.find((user) => user.email === formData.email)) {
           alert("User already registered. Please login.");
         } else {
-          users.push({ name: formData.name, email: formData.email, password: formData.password });
+          users.push({ name: formData.name, email: formData.email, password: formData.password, category: formData.category });
           alert("Registered successfully!");
           toggleForm(); // Switch to login after successful registration
         }
@@ -67,49 +72,54 @@ const LoginPage = () => {
           alert("Invalid credentials or user not registered. Please register first.");
         }
       }
-      setFormData({ name: "", email: "", password: "" });
+      setFormData({ name: "", email: "", password: "", category: "" });
     }
   };
 
   const isFormValid = () =>
-    !errors.name && !errors.email && !errors.password &&
-    (isRegister ? formData.name : true) &&
+    !errors.name && !errors.email && !errors.password && !errors.category &&
+    (isRegister ? formData.name && formData.category : true) &&
     formData.email &&
     formData.password;
 
   return (
     <Box
       sx={{
-        backgroundColor: "white",
-        minHeight: "100vh",
+        // backgroundColor: "#000",
+        minHeight: "85vh",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        color: "black",
         fontFamily: '"Roboto", sans-serif',
+        padding: 2,
+        transition: "background-color 0.5s ease", 
+        background: "linear-gradient(135deg, #fff9f9, #FEB47B)"
+
       }}
     >
       <Box
         sx={{
           backgroundColor: "#fff",
           padding: "32px",
-          borderRadius: "12px",
-          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-          maxWidth: "400px",
           width: "100%",
+          maxWidth: "400px",
+          boxShadow: "0 2px 6px rgba(0, 0, 0, 0.35)",  
+          "&:hover": {
+            boxShadow: "0 12px 36px rgba(0, 0, 0, 0.15)",  
+          },
           transition: "all 0.3s ease",
         }}
       >
         <Typography
-          variant="h4"
+          variant="h5"
           sx={{
             fontWeight: 700,
             marginBottom: "24px",
             textAlign: "center",
-            transition: "color 0.3s ease",
+            color: "#333",
           }}
         >
-          {isRegister ? "Register" : "Login"}
+          <Divider>{isRegister ? "Register" : "Login"}</Divider>
         </Typography>
 
         <form onSubmit={handleSubmit}>
@@ -130,38 +140,78 @@ const LoginPage = () => {
               }}
             />
           )}
+
           <TextField
             fullWidth
             label="Email"
             name="email"
             type="email"
+            placeholder="Enter your email here"
             variant="outlined"
             value={formData.email}
             onChange={handleInputChange}
             error={!!errors.email}
             helperText={errors.email}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Email sx={{ color: "#FF7E5F" }} /> {/* Add Email icon */}
+                </InputAdornment>
+              ),
+            }}
             sx={{
               marginBottom: "16px",
               input: { color: "black" },
               label: { color: "black" },
             }}
           />
+
           <TextField
             fullWidth
             label="Password"
             name="password"
             type="password"
+            placeholder="Enter your password here"
             variant="outlined"
             value={formData.password}
             onChange={handleInputChange}
             error={!!errors.password}
             helperText={errors.password}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Lock sx={{ color: "#FF7E5F" }} /> {/* Add Lock icon */}
+                </InputAdornment>
+              ),
+            }}
             sx={{
-              marginBottom: "24px",
+              marginBottom: "16px",
               input: { color: "black" },
               label: { color: "black" },
             }}
           />
+
+          {isRegister && (
+            <FormControl fullWidth error={!!errors.category} sx={{ marginBottom: "16px" }}>
+              <InputLabel>Business Category</InputLabel>
+              <Select
+                name="category"
+                value={formData.category}
+                onChange={handleInputChange}
+                label="Business Category"
+              >
+                <MenuItem value="fruits">Fruits Business</MenuItem>
+                <MenuItem value="vegetables">Vegetables Business</MenuItem>
+                <MenuItem value="laundry">Laundry Business</MenuItem>
+                <MenuItem value="dairy">Dairy Products</MenuItem>
+                <MenuItem value="other">Other</MenuItem>
+              </Select>
+              <Typography variant="caption" sx={{ color: "red" }}>
+                {errors.category}
+              </Typography>
+            </FormControl>
+          )}
+
           <Button
             type="submit"
             variant="contained"
@@ -170,12 +220,12 @@ const LoginPage = () => {
             disabled={!isFormValid()}
             sx={{
               marginBottom: "16px",
-              transition: "background-color 0.3s ease, transform 0.3s ease",
+              background: "#FF7E5F",
               "&:hover": {
-                backgroundColor: "#0066cc",
-                transform: "translateY(-2px)",
+                backgroundColor: "#FF4A35",
               },
-              background:"#FF7E5F"
+              transition: "background-color 0.3s ease, transform 0.3s ease",
+              padding: "14px",
             }}
           >
             {isRegister ? "Register" : "Login"}
@@ -191,7 +241,7 @@ const LoginPage = () => {
             color: "#0066cc",
             transition: "color 0.3s ease",
             "&:hover": {
-              color: "primary.main",
+              color: "#003366",
             },
           }}
           onClick={toggleForm}

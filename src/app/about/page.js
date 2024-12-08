@@ -11,25 +11,25 @@ const AboutUs = () => {
     {
       title: "Our Vision",
       description:
-        "To revolutionize the way people access fresh veg by creating a seamless, convenient, and reliable delivery experience that connects farms to families while fostering a healthier community.",
+        "To revolutionize the way people experience convenience by empowering small businesses across every sector, creating a vibrant ecosystem that delivers trusted, high-quality services directly to your doorstep, anytime, anywhere.",
       image: "/vision.jpg",
     },
     {
       title: "Our Mission",
       description:
-        "Our mission is to deliver the freshest, highest-quality vegetables directly to your doorstep. We aim to empower local farmers, reduce food waste, and promote sustainable living.",
+        "We are on a mission to connect small businesses to the world, providing them with a platform to deliver essential products and services directly to customers' doors. From food and groceries to laundry, healthcare, and beyond — we aim to simplify lives by making services more accessible and efficient for all.",
       image: "/mission.jpg",
     },
     {
       title: "Our Promise",
       description:
-        "We promise to bring you only the finest, freshest produce sourced from trusted local farms, ensuring every bite you take is packed with nutrition and flavor.",
+        "We promise to be the bridge between you and the services you need, delivering convenience, reliability, and trust. Whether you're craving fresh food, need laundry done, or require professional services, our platform ensures top-tier experiences every time.",
       image: "/promise.jpg",
     },
     {
       title: "Our Values",
       description:
-        "Sustainability, quality, and community are at the heart of everything we do. Our values guide us in creating meaningful connections between farms and families.",
+        "At the heart of everything we do lies a commitment to innovation, community, and service. We value the diverse range of businesses we partner with and strive to offer customers an unparalleled experience, fostering a seamless connection between them and local entrepreneurs.",
       image: "/values.jpg",
     },
   ];
@@ -45,7 +45,7 @@ const AboutUs = () => {
         <title>About Us | Fresh Veggies</title>
         <meta name="description" content="Learn more about our mission, values, and team." />
         <meta property="og:title" content="About Us" />
-        <meta property="og:description" content="Discover our story, mission, and vision for fresh vegetable delivery." />
+        <meta property="og:description" content="Discover our story, mission, and vision for doorstep services." />
         <meta name="robots" content="index, follow" />
       </Head>
 
@@ -124,7 +124,7 @@ const AboutUs = () => {
           </Typography>
 
           <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
-            Our team is committed to ensuring that you have an unforgettable experience by delivering fresh, sustainable produce to your doorstep.
+            We believe in empowering small businesses and entrepreneurs by bringing them closer to customers through a seamless platform. We are here to simplify lives by delivering everything you need, from groceries to healthcare, right at your doorstep.
           </Typography>
         </Box>
       </Box>
@@ -157,7 +157,7 @@ const AboutUs = () => {
                 <Card
                   sx={{
                     maxWidth: "100%",
-                    height: "400px",
+                    height: "480px",
                     boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)",
                     borderRadius: "16px",
                     overflow: "hidden",

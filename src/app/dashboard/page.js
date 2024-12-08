@@ -1,392 +1,290 @@
 "use client";
-import React, { useState } from 'react';
-import { Box, TextField, Button, Grid, Container, FormControl, InputLabel, Select, MenuItem, Divider, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton } from '@mui/material';
-import { Add, Edit, Save, Delete } from '@mui/icons-material';
+import React, { useState } from "react";
+import {
+  Container,
+  Typography,
+  Grid,
+  TextField,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
+  Checkbox,
+  FormControlLabel,
+  FormGroup,
+  Button,
+  Box,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Fade,
+  Divider,
+} from "@mui/material";
+import Chip from '@mui/material/Chip';
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
-// Initial data structure for a single entry
-const initialData = {
-    title: "",
-    alt: "",
-    day: "Monday",
+import './dashboard.css';
+
+const Page = () => {
+  const [formData, setFormData] = useState({
+    name: "",
+    mobile: "",
+    location: "",
     time: "",
-    location: "Near Ram Mandir", // Default location option
-    num: "",
-    image: "",
-    items: [
-        {
-            src: "",
-            alt: "",
-            title: "",
-            address: "",
-            rating: "",
-            off: "",
-            price: ""
+    day: "",
+    vegetables: {
+      Tomato: { available: false, price: "", marketprice: "" },
+      Potato: { available: false, price: "", marketprice: "" },
+      Beans: { available: false, price: "", marketprice: "" },
+      Brinjal: { available: false, price: "", marketprice: "" },
+      Cabbage: { available: false, price: "", marketprice: "" },
+      "Cauli Flower": { available: false, price: "", marketprice: "" },
+      Chilli: { available: false, price: "", marketprice: "" },
+      "Cow Pea": { available: false, price: "", marketprice: "" },
+      Garlic: { available: false, price: "", marketprice: "" },
+      Cucumber: { available: false, price: "", marketprice: "" },
+      Ginger: { available: false, price: "", marketprice: "" },
+    },
+  });
+
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [expanded, setExpanded] = useState(true);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    if (name.includes(".")) {
+      const [vegName, field] = name.split(".");
+
+      setFormData((prev) => ({
+        ...prev,
+        vegetables: {
+          ...prev.vegetables,
+          [vegName]: { ...prev.vegetables[vegName], [field]: value },
         },
-    ]
-};
+      }));
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
+  };
 
-const AddEntryForm = () => {
-    const [formData, setFormData] = useState(initialData);
-    const [entries, setEntries] = useState([]);
-    const [editingIndex, setEditingIndex] = useState(null);
-    const [imageDevices, setImageDevices] = useState({
-        'Device 1': 'https://example.com/device1.jpg',
-        'Device 2': 'https://example.com/device2.jpg',
-        'Device 3': 'https://example.com/device3.jpg',
-        'Device 4': 'https://example.com/device4.jpg'
-    });
+  const handleCheckboxChange = (e) => {
+    const { name, checked } = e.target;
+    const vegetableName = name.split(".")[0];
+    setFormData((prev) => ({
+      ...prev,
+      vegetables: {
+        ...prev.vegetables,
+        [vegetableName]: { ...prev.vegetables[vegetableName], available: checked },
+      },
+    }));
+  };
 
-    // Handle input changes
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prevData) => ({ ...prevData, [name]: value }));
-    };
+  const vegetablesList = [
+    "Tomato", "Potato", "Beans", "Brinjal", "Cabbage", "Cauli Flower", "Chilli",
+    "Cow Pea", "Garlic", "Cucumber", "Ginger"
+  ];
 
-    const handleItemChange = (index, e) => {
-        const { name, value } = e.target;
-        const updatedItems = [...formData.items];
-        updatedItems[index][name] = value;
-        setFormData((prevData) => ({ ...prevData, items: updatedItems }));
-    };
+  const handleSubmit = () => {
+    if (isSubmitted) {
+      console.log("Updated data:", formData);
+    } else {
+      console.log("Form submitted:", formData);
+    }
+    setIsSubmitted(true);
+  };
 
-    const handleAddEntry = () => {
-        setEntries([...entries, formData]);
-        setFormData(initialData); // Reset form after adding entry
-    };
+  return (
+    <Box className="b1" sx={{ display: "flex", flexDirection: "column", minHeight: "100vh",backgroundImage:"url(/a2.avif)",backgroundSize:"cover" }}>
 
-    const handleEditEntry = (index) => {
-        setFormData(entries[index]);
-        setEditingIndex(index);
-    };
+      <header>
+        <Typography variant="h4" component="h1" align="center" gutterBottom className="title">
+          Manage Your Vegetable Inventory
+        </Typography>
+      </header>
+      <Box className="child">
+        <section>
 
-    const handleSaveEdit = () => {
-        const updatedEntries = [...entries];
-        updatedEntries[editingIndex] = formData;
-        setEntries(updatedEntries);
-        setEditingIndex(null); // Exit editing mode
-        setFormData(initialData); // Reset form
-    };
 
-    const handleDeleteEntry = (index) => {
-        const updatedEntries = entries.filter((_, i) => i !== index);
-        setEntries(updatedEntries);
-    };
+          <Grid container spacing={6}>
+            <Grid item xs={12} md={4}> <Fade in={true} timeout={500}>
+              <Accordion
+                expanded={expanded}
+                onChange={() => setExpanded(!expanded)}
+                className={expanded ? 'accordion-active' : ''}
+                sx={{ margin: "10px 0px" }}
+              >
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  aria-controls="panel1a-content"
+                  id="panel1a-header"
+                >
+                  <Typography variant="h6" className="title1">Use of direction</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Typography variant="body1" paragraph>
+                    <strong>Step 1:-</strong><br></br> Fill in your personal details including Name, Mobile No, Location, and Time slot.
+                    <br />
+                    <strong>Step 2:-</strong><br></br> Update your availability, location, and day so customers can contact you easily.
+                    <br />
+                    <strong>Step 3:-</strong><br></br> Update the daily rates for your vegetables and specify the market price for comparison.
+                    <br />
+                    <strong>Step 4:-</strong><br></br> Mark whether each vegetable is available for sale, so customers can see your inventory status.
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    fullWidth
+                    aria-label="add"
+                    className="submit-btn"
+                    size="small"
+                  >
+                    Click here to add extra option
+                  </Button>
+                </AccordionDetails>
+              </Accordion>
+            </Fade>
 
-    return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', padding: 2 }}>
-            <Box component="main" sx={{ flexGrow: 1 }}>
-                <Container maxWidth="xs" sx={{ mt: 2 }}>
-                    <Divider>
-                        <Typography variant="h5" sx={{ fontWeight: 600, margin: "10px 0px", textAlign: "center", color: "#000" }}>
-                            Add Details
-                        </Typography>
-                    </Divider>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Divider>  <Chip label="Fill the Form" className="chip" /></Divider>
 
-                    {/* Form Fields */}
-                    <Grid container spacing={1}>
-                        {/* Title Dropdown */}
-                        <Grid item xs={12}>
-                            <FormControl fullWidth variant="standard" sx={{ height: '30px' }}>
-                                <InputLabel>Title</InputLabel>
-                                <Select
-                                    label="Title"
-                                    name="title"
-                                    value={formData.title}
-                                    onChange={handleChange}
-                                    sx={{
-                                        height: '30px',
-                                        padding: '6px 0',
-                                        input: { padding: '6px 0' },
-                                        fontSize: '14px'
-                                    }}
-                                >
-                                    {['Device 1', 'Device 2', 'Device 3', 'Device 4'].map((device) => (
-                                        <MenuItem key={device} value={device}>{device}</MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
-                        </Grid>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={12}>
+                  <TextField
+                    fullWidth
+                    label="Name"
+                    name="name"
+                    size="small"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    required
+                    aria-label="Enter your full name"
+                  />
+                </Grid>
+                <Grid item xs={12} sm={12}>
+                  <TextField
+                    fullWidth
+                    label="Mobile No"
+                    name="mobile"
+                    size="small"
+                    value={formData.mobile}
+                    onChange={handleInputChange}
+                    required
+                    aria-label="Enter your mobile number"
+                  />
+                </Grid>
+                <Grid item xs={12} sm={12}>
+                  <TextField
+                    fullWidth
+                    label="Location"
+                    name="location"
+                    size="small"
+                    value={formData.location}
+                    onChange={handleInputChange}
+                    required
+                    aria-label="Enter your location"
+                  />
+                </Grid>
+                <Grid item xs={12} sm={12}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Time</InputLabel>
+                    <Select
+                      name="time"
+                      value={formData.time}
+                      onChange={handleInputChange}
+                      label="Time"
+                      required
+                      aria-label="Select preferred time slot"
+                    >
+                      <MenuItem value="Morning">Morning</MenuItem>
+                      <MenuItem value="Afternoon">Afternoon</MenuItem>
+                      <MenuItem value="Evening">Evening</MenuItem>
+                      <MenuItem value="Night">Night</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} sm={12}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Day</InputLabel>
+                    <Select
+                      name="day"
+                      value={formData.day}
+                      onChange={handleInputChange}
+                      label="Day"
+                      required
+                      aria-label="Select the day"
+                    >
+                      {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map((day) => (
+                        <MenuItem key={day} value={day}>
+                          {day}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+              </Grid>
+            </Grid>
 
-                        {/* Alt Text */}
-                        <Grid item xs={12}>
-                            <TextField
-                                placeholder="Alt Text"
-                                name="alt"
-                                value={formData.alt}
-                                onChange={handleChange}
-                                fullWidth
-                                variant="standard"
-                                sx={{
-                                    height: '30px',
-                                    padding: '6px 0',
-                                    input: { padding: '6px 0' },
-                                    fontSize: '14px'
-                                }}
-                            />
-                        </Grid>
-
-                        {/* Day Dropdown */}
-                        <Grid item xs={6}>
-                            <FormControl fullWidth variant="standard" sx={{ height: '30px' }}>
-                                <InputLabel>Day</InputLabel>
-                                <Select
-                                    label="Day"
-                                    name="day"
-                                    value={formData.day}
-                                    onChange={handleChange}
-                                    sx={{
-                                        height: '30px',
-                                        padding: '6px 0',
-                                        input: { padding: '6px 0' },
-                                        fontSize: '14px'
-                                    }}
-                                >
-                                    {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map((day) => (
-                                        <MenuItem key={day} value={day}>{day}</MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
-                        </Grid>
-
-                        {/* Time Field */}
-                        <Grid item xs={6}>
-                            <TextField
-                                placeholder="Time"
-                                name="time"
-                                value={formData.time}
-                                onChange={handleChange}
-                                fullWidth
-                                variant="standard"
-                                sx={{
-                                    height: '30px',
-                                    padding: '6px 0',
-                                    input: { padding: '6px 0' },
-                                    fontSize: '14px'
-                                }}
-                            />
-                        </Grid>
-
-                        {/* Contact Number Field */}
-                        <Grid item xs={12}>
-                            <TextField
-                                placeholder="Contact Number"
-                                name="num"
-                                value={formData.num}
-                                onChange={handleChange}
-                                fullWidth
-                                variant="standard"
-                                sx={{
-                                    height: '30px',
-                                    padding: '6px 0',
-                                    input: { padding: '6px 0' },
-                                    fontSize: '14px'
-                                }}
-                            />
-                        </Grid>
-
-                        {/* Image URL Field (Based on selected device) */}
-                        {formData.title && (
-                            <Grid item xs={12}>
-                                <TextField
-                                    placeholder="Image URL"
-                                    name="image"
-                                    value={formData.image || imageDevices[formData.title]}
-                                    onChange={handleChange}
-                                    fullWidth
-                                    variant="standard"
-                                    sx={{
-                                        height: '30px',
-                                        padding: '6px 0',
-                                        input: { padding: '6px 0' },
-                                        fontSize: '14px'
-                                    }}
-                                />
-                            </Grid>
-                        )}
+            <Grid item xs={12} md={4}>
+              <FormGroup>
+                {vegetablesList.map((veg) => (
+                  <Grid container spacing={2} key={veg}>
+                    <Grid item xs={12} sm={4}>
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            name={`${veg}.available`}
+                            checked={formData.vegetables[veg].available}
+                            onChange={handleCheckboxChange}
+                          />
+                        }
+                        label={`${veg}`}
+                      />
                     </Grid>
-
-                    {/* Add Item Section */}
-                    {formData.items.map((item, index) => (
-                        <Box key={index} sx={{ mt: 2 }}>
-                            <Grid container spacing={1}>
-                                <Grid item xs={12}>
-                                    <TextField
-                                        placeholder="Item Title"
-                                        name="title"
-                                        value={item.title}
-                                        onChange={(e) => handleItemChange(index, e)}
-                                        fullWidth
-                                        variant="standard"
-                                        sx={{
-                                            height: '30px',
-                                            padding: '6px 0',
-                                            input: { padding: '6px 0' },
-                                            fontSize: '14px'
-                                        }}
-                                    />
-                                </Grid>
-                                <Grid item xs={6}>
-                                    <TextField
-                                        placeholder="Price"
-                                        name="price"
-                                        value={item.price}
-                                        onChange={(e) => handleItemChange(index, e)}
-                                        fullWidth
-                                        variant="standard"
-                                        sx={{
-                                            height: '30px',
-                                            padding: '6px 0',
-                                            input: { padding: '6px 0' },
-                                            fontSize: '14px'
-                                        }}
-                                    />
-                                </Grid>
-                                <Grid item xs={6}>
-                                    <TextField
-                                        placeholder="Offer"
-                                        name="off"
-                                        value={item.off}
-                                        onChange={(e) => handleItemChange(index, e)}
-                                        fullWidth
-                                        variant="standard"
-                                        sx={{
-                                            height: '30px',
-                                            padding: '6px 0',
-                                            input: { padding: '6px 0' },
-                                            fontSize: '14px'
-                                        }}
-                                    />
-                                </Grid>
-                                <Grid item xs={12}>
-                                    <TextField
-                                        placeholder="Image URL"
-                                        name="src"
-                                        value={item.src}
-                                        onChange={(e) => handleItemChange(index, e)}
-                                        fullWidth
-                                        variant="standard"
-                                        sx={{
-                                            height: '30px',
-                                            padding: '6px 0',
-                                            input: { padding: '6px 0' },
-                                            fontSize: '14px'
-                                        }}
-                                    />
-                                </Grid>
-                            </Grid>
-                        </Box>
-                    ))}
-
-                    {/* Add Item Button */}
-                    <Button
-                        variant="contained"
-                        sx={{
-                            mt: 1,
-                            backgroundColor: '#FF7E5F',
-                            '&:hover': { backgroundColor: '#f00' },
-                            minHeight: '35px',
-                        }}
-                        startIcon={<Add />}
-                        onClick={() => setFormData(prevData => ({
-                            ...prevData,
-                            items: [...prevData.items, {
-                                src: "", alt: "", title: "", address: "", rating: "", off: "", price: ""
-                            }]
-                        }))}
+                    <Grid item xs={6} sm={4}>
+                      <TextField
+                        size="small"
                         fullWidth
-                    >
-                        Add Item
-                    </Button>
-
-                    {/* Add Entry Button */}
-                    <Button
-                        variant="contained"
-                        sx={{
-                            mt: 2,
-                            backgroundColor: '#4CAF50',
-                            '&:hover': { backgroundColor: '#45a049' },
-                            minHeight: '35px',
-                        }}
-                        onClick={handleAddEntry}
+                        label={`${veg} Price`}
+                        name={`${veg}.price`}
+                        value={formData.vegetables[veg].price}
+                        onChange={handleInputChange}
+                        aria-label={`Enter ${veg} price`}
+                      />
+                    </Grid>
+                    <Grid item xs={6} sm={4}>
+                      <TextField
+                        size="small"
                         fullWidth
-                    >
-                        Add Entry
-                    </Button>
+                        label={`${veg} Market Price`}
+                        name={`${veg}.marketprice`}
+                        value={formData.vegetables[veg].marketprice}
+                        onChange={handleInputChange}
+                        aria-label={`Enter ${veg} market price`}
+                      />
+                    </Grid>
+                  </Grid>
+                ))}
+              </FormGroup>
 
-                    {/* Table to display entries */}
-                    {entries.length > 0 && (
-                        <TableContainer component={Paper} sx={{ mt: 2 }}>
-                            <Table sx={{ minWidth: 650 }}>
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell>Title</TableCell>
-                                        <TableCell align="center">Day</TableCell>
-                                        <TableCell align="center">Time</TableCell>
-                                        <TableCell align="center">Contact Number</TableCell>
-                                        <TableCell align="center">Actions</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {entries.map((entry, index) => (
-                                        <TableRow key={index}>
-                                            <TableCell>
-                                                <TextField
-                                                    value={entry.title}
-                                                    onChange={(e) => handleEditEntry(index)}
-                                                    fullWidth
-                                                    variant="standard"
-                                                />
-                                            </TableCell>
-                                            <TableCell align="center">
-                                                <TextField
-                                                    value={entry.day}
-                                                    onChange={(e) => handleEditEntry(index)}
-                                                    fullWidth
-                                                    variant="standard"
-                                                />
-                                            </TableCell>
-                                            <TableCell align="center">
-                                                <TextField
-                                                    value={entry.time}
-                                                    onChange={(e) => handleEditEntry(index)}
-                                                    fullWidth
-                                                    variant="standard"
-                                                />
-                                            </TableCell>
-                                            <TableCell align="center">
-                                                <TextField
-                                                    value={entry.num}
-                                                    onChange={(e) => handleEditEntry(index)}
-                                                    fullWidth
-                                                    variant="standard"
-                                                />
-                                            </TableCell>
-                                            <TableCell align="center">
-                                                {editingIndex === index ? (
-                                                    <IconButton onClick={handleSaveEdit}>
-                                                        <Save />
-                                                    </IconButton>
-                                                ) : (
-                                                    <>
-                                                        <IconButton onClick={() => handleEditEntry(index)}>
-                                                            <Edit />
-                                                        </IconButton>
-                                                        <IconButton onClick={() => handleDeleteEntry(index)}>
-                                                            <Delete />
-                                                        </IconButton>
-                                                    </>
-                                                )}
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
-                    )}
-                </Container>
-            </Box>
-        </Box>
-    );
+              <Button
+                variant="contained"
+                color="primary"
+                fullWidth
+                onClick={handleSubmit}
+                aria-label="Submit or Update your details"
+                className="submit-btn"
+                size="small"
+              >
+                {isSubmitted ? "Update" : "Submit"}
+              </Button>
+            </Grid>
+
+          </Grid>
+        </section>
+      </Box>
+    </Box>
+  );
 };
 
-export default AddEntryForm;
+export default Page;

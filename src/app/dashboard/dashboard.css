@@ -1,0 +1,79 @@
+/* .b1 {
+  height: 100vh;
+  padding: 20px 0px;
+} */
+
+.title {
+  text-align: center;
+  font-weight: 700;
+  margin: 20px 0px;
+  font-size: 24px;
+  font-family: 'Times New Roman', Times, serif;
+}
+.title1 {
+  font-weight: 700;
+  margin-bottom: 20px;
+  font-size: 18px;
+  font-family: 'Times New Roman', Times, serif;
+}
+.form-input {
+  margin-bottom: 16px;
+}
+
+.submit-btn {
+  background-color: #FF7E5F;
+  color: #fff;
+  padding: 4px;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  margin-top: 10px;
+}
+
+.submit-btn:hover {
+  background-color: #FF4A35;
+}
+
+@media screen and (max-width: 600px) {
+  .dashboard-container {
+    padding: 15px;
+  }
+
+  .title {
+    font-size: 22px;
+  }
+
+  .submit-btn {
+    font-size: 14px;
+  }
+}
+
+@media screen and (max-width: 900px) {
+  .form-input {
+    margin-bottom: 12px;
+  }
+
+  .submit-btn {
+    font-size: 16px;
+  }
+}
+.accordion-active .MuiAccordionSummary-root {
+  /* background-color: #f0f0f0;   */
+  border-left: 5px solid #4caf50;  
+  transition: background-color 0.3s ease, border-left 0.3s ease;
+}
+
+.MuiAccordionSummary-root {
+  transition: background-color 0.3s ease, border-left 0.3s ease;
+}
+.chip{
+  margin:10px 0px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  font-size: 18px;
+  font-family: 'Times New Roman', Times, serif;
+  color: #ffffff;
+  background: #FF4A35;
+}
+.child{
+  padding: 0px 30px;
+}
