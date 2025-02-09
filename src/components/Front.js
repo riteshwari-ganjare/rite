@@ -54,11 +54,11 @@ const Front = ({ images, items, data }) => {
   return (
     <>
       <Head>
-        <title>Your Business | Home</title> {/* Added SEO title */}
-        <meta name="description" content="We provide services to help businesses grow online. Contact us today!" /> {/* SEO description */}
-        <meta name="keywords" content="business, online services, digital marketing" /> {/* SEO keywords */}
-        <meta name="robots" content="index, follow" /> {/* SEO robot instruction */}
-        <link rel="icon" href="/favicon.ico" /> {/* Favicon */}
+        <title>Your Business | Home</title> 
+        <meta name="description" content="We provide services to help businesses grow online. Contact us today!" />
+        <meta name="keywords" content="business, online services, digital marketing,Riteshwari Ganjare" />
+        <meta name="robots" content="index, follow" /> 
+        <link rel="icon" href="/favicon.ico" /> 
       </Head>
 
       <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "16px", height: "80vh", backgroundSize: "cover", flexDirection: "column", backgroundImage: "url('/Home.png')", backgroundColor: "black" }}>
