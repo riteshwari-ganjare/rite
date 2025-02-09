@@ -5,6 +5,7 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import { ArrowForward } from '@mui/icons-material';
 import Image from "next/image";
+import Head from "next/head"; // Importing Head for SEO purposes
 
 const Front = ({ images, items, data }) => {
   const [selectedItem, setSelectedItem] = useState(null);
@@ -52,6 +53,14 @@ const Front = ({ images, items, data }) => {
 
   return (
     <>
+      <Head>
+        <title>Your Business | Home</title> {/* Added SEO title */}
+        <meta name="description" content="We provide services to help businesses grow online. Contact us today!" /> {/* SEO description */}
+        <meta name="keywords" content="business, online services, digital marketing" /> {/* SEO keywords */}
+        <meta name="robots" content="index, follow" /> {/* SEO robot instruction */}
+        <link rel="icon" href="/favicon.ico" /> {/* Favicon */}
+      </Head>
+
       <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "16px", height: "80vh", backgroundSize: "cover", flexDirection: "column", backgroundImage: "url('/Home.png')", backgroundColor: "black" }}>
         <Typography variant="h5" sx={{ fontWeight: 700, color: "#FF7E5F", borderBottom: "2px solid #FF7E5F", textTransform: "uppercase", fontSize: { xs: "30px", sm: "45px" } }}>
           We Provide
