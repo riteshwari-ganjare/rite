@@ -1,3 +1,5 @@
+import { Man2, Man3 } from "@mui/icons-material";
+
 export const images = [
   {
     title: "Nagpur",
@@ -1578,3 +1580,5 @@ export const bot = [
   }
 ]
 
+export const data=[  { url: "/m1.png",des:"STEP1: Login yourself" },{ url: "/m2.png",des:"STEP2:If already registered Login Here" },{ url: "/m3.png",des:"STEP2: If Not registered Registered register here with selecting here with your business name (eg. vegetables) " },{ url: "/m4.png",des:"STEP4: Fill Your Details here and you can update and add your details here" },{ url: "/m5.png",des:"STEP5: Now you can check your products here" },
+]
