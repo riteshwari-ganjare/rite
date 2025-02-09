@@ -1,8 +1,7 @@
-
 "use client";
 
 import React, { useState, Suspense } from "react";
-import { Box, Container, Typography, Grid, Divider, Card } from "@mui/material";
+import { Box, Container, Typography, Grid, Divider, Card, CircularProgress } from "@mui/material";
 import Link from "next/link";
 import Image from "next/image";
 import dynamic from "next/dynamic";
@@ -105,18 +104,29 @@ const Page = () => {
 
   const handleCategorySelect = (category) => setSelectedCategory(category);
 
-
   const filteredImages = images.find((category) => category.title === selectedCategory)?.items || [];
   const visibleImages = showAll ? filteredImages : filteredImages.slice(0, 4);
 
   return (
     <>
-     
       <Head>
-        <meta name="description" content="Discover the best restaurants near you" />
-        <title>Restaurants Near You | Local Eats</title>
-        <meta property="og:title" content="Restaurants Near You" />
-        <meta property="og:description" content="Explore a wide variety of restaurants near your location." />
+        <meta name="description" content={`Find fresh ${selectedCategory || 'vegetables'} near you. Explore offerings by [Your Name].`} />
+        <title>{selectedCategory ? `${selectedCategory} - Local Fresh Produce | [Your Name]` : `Local Fresh Produce | [Your Name]`}</title>
+        <meta property="og:title" content={selectedCategory ? `${selectedCategory} - Local Fresh Produce | [Your Name]` : `Local Fresh Produce | [Your Name]`} />
+        <meta property="og:description" content={`Explore a wide range of fresh ${selectedCategory || 'vegetables'} near you, curated by [Your Name].`} />
+
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Person",
+              "name": "riteshwari ganjare",
+              "url": window.location.href,
+              "description": "Find fresh vegetables and produce curated by riteshwari ganjare.",
+            }),
+          }}
+        />
       </Head>
 
       <Front items={items} images={images} data={data} />
@@ -133,8 +143,8 @@ const Page = () => {
             {selectedCategory ? `Find Fresh Vegetables in ${selectedCategory}` : ""}
           </Typography>
           <Link href="/" passHref>
-            <Typography sx={page1.seeMore} onClick={() => setShowAll(true)}>
-              {selectedCategory ? `See All` : ""}
+            <Typography sx={page1.seeMore} onClick={() => setShowAll(prev => !prev)}>
+              {selectedCategory ? (showAll ? "Show Less" : "See All") : ""}
             </Typography>
           </Link>
         </Box>
@@ -158,7 +168,7 @@ const Page = () => {
                   <OfferImage1 src={image.src} alt={image.alt} />
                 </Box>
                 <Box sx={{ padding: "8px", flex: 1, position: "relative" }}>
-                  <Typography variant="h4" sx={{ fontSize: "16px", fontWeight: 700 }}>
+                  <Typography variant="h4" sx={{ fontSize: { xs: '14px', sm: '16px' }, fontWeight: 700 }}>
                     {image.title}
                   </Typography>
                   <Typography variant="body2" sx={{ color: "gray", marginBottom: "8px" }}>
@@ -188,7 +198,7 @@ const Page = () => {
       </Container>
       <Divider sx={{ width: "100%", my: 2 }} />
 
-      <Suspense fallback={<div>Loading...</div>}>
+      <Suspense fallback={<CircularProgress color="primary" />}>
         <Available images={images} />
       </Suspense>
     </>
