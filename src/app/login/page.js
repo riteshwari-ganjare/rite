@@ -259,7 +259,6 @@
 "use client";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import axios from "axios"; 
 import {
   Box,
   Typography,
@@ -355,30 +354,15 @@ const LoginPage = () => {
         }
 
         if (isRegister) {
-          const response = await axios.post(
-            "/api/register",
-            formData
-          );
-          alert(response.data.message);
           alert(data.message);
           toggleForm(); 
         } else {
-          const response = await axios.post(
-            "/api/login", 
-            {
-              email: formData.email,
-              password: formData.password,
-            }
-          );
-          alert(response.data.message);
-          localStorage.setItem("token", response.data.token);
           alert(data.message);
           localStorage.setItem("token", data.token);
           localStorage.setItem("userEmail", formData.email);
           router.push("/dashboard");
         }
       } catch (error) {
-        alert(error.response?.data?.message || "Something went wrong.");
         alert(error.message);
       }
     }

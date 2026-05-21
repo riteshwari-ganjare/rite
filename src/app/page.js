@@ -61,8 +61,12 @@ const Page = () => {
   useEffect(() => {
     async function fetchLatestMenu() {
       try {
-        // Fetching for the canteen owner 'riteshwari' for the current date
         const res = await fetch(`/api/daily-menu?date=${todayISO()}&userEmail=riteshwari`);
+        
+        if (!res.ok) {
+          throw new Error('Failed to fetch daily menu');
+        }
+
         const result = await res.json();
         
         if (result && result.menu && result.menu.items && result.menu.items.length > 0 && result.menu.startTime) {
