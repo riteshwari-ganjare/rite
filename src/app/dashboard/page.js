@@ -191,24 +191,36 @@ const DashboardPage = () => {
   };
 
   const createItem = async () => {
-    await fetch('/api/items', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        type: newType,
-        name: newName,
-        description: newDescription,
-        image: newImage,
-        price: Number(newPrice || 0),
-        createdBy: userEmail || '',
-      }),
+    try {
+      const res = await fetch('/api/items', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: newType,
+          name: newName,
+          description: newDescription,
+          image: newImage,
+          price: Number(newPrice || 0),
+          createdBy: userEmail || '',
+        }),
+      });
 
-    });
-    setAddOpen(false);
-    await loadData();
-    setDialogTitle('Success');
-    setDialogMessage('New item created successfully!');
-    setDialogOpen(true);
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to create item');
+      }
+
+      setAddOpen(false);
+      await loadData();
+      setDialogTitle('Success');
+      setDialogMessage('New item created successfully!');
+      setDialogOpen(true);
+    } catch (e) {
+      console.error(e);
+      setDialogTitle('Error');
+      setDialogMessage('Failed to create item: ' + e.message);
+      setDialogOpen(true);
+    }
   };
 
   return (

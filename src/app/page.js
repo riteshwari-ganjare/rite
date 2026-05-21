@@ -97,12 +97,17 @@ const Page = () => {
           // Automatically select Today's Specials to show canteen items instead of default vegetables
           setSelectedCategory("Today's Specials");
         } else {
-          // No canteen menu for this slot, show nothing or a "No Menu" message
+          throw new Error('No items found');
+        }
+      } catch (e) { 
+        console.error("Failed to fetch menu:", e);
+        // Fallback to empty state on error or missing data
+        if (dynamicImages.length > 0 || dynamicItems.length > 0) {
           setDynamicImages([]); // No categories to display
           setDynamicItems([]); // No items for the "We Provide" slider
           setSelectedCategory(null); // No category selected
         }
-      } catch (e) { console.error("Failed to fetch menu:", e); }
+      }
     }
     fetchLatestMenu();
   }, []); // Empty dependency array to run once on mount
