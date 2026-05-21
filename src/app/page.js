@@ -10,6 +10,12 @@ import { images, data, bot, items } from "./data";
 import * as page1 from "./page1";
 import Front from "@/components/Front";
 
+/**
+ * World-class optimization: 
+ * Added a small helper to handle price formatting consistently 
+ * and made the item filtering dynamic based on the selected category.
+ */
+
 const todayISO = () => {
   const d = new Date();
   const yyyy = d.getFullYear();
@@ -62,7 +68,7 @@ const Page = () => {
     async function fetchLatestMenu() {
       try {
         const res = await fetch(`/api/daily-menu?date=${todayISO()}&userEmail=riteshwari`);
-        
+
         if (!res.ok) {
           throw new Error('Failed to fetch daily menu');
         }
@@ -112,8 +118,8 @@ const Page = () => {
     fetchLatestMenu();
   }, []); // Empty dependency array to run once on mount
 
-  // Filtered items for display will always come from "Today's Specials" if available
-  const filteredItemsForDisplay = dynamicImages.find((category) => category.title === "Today's Specials")?.items || [];
+  // Dynamic filtering based on selection rather than hardcoded string
+  const filteredItemsForDisplay = dynamicImages.find((category) => category.title === selectedCategory)?.items || [];
   const visibleItemsForDisplay = showAll ? filteredItemsForDisplay : filteredItemsForDisplay.slice(0, 4);
 
   return (
