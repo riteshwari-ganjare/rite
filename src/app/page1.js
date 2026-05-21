@@ -8,9 +8,9 @@ export const seeMore = {
   display: 'inline-flex', 
   justifyContent: 'flex-end',  
   alignItems: 'center', 
-  textAlign: 'right',  
+  textAlign: 'right', transition: 'all 0.3s ease',
   '&:hover': {
-    color: 'red',
+    color: '#FF7E5F', transform: 'translateX(5px)',
   },
 };
 export const head={

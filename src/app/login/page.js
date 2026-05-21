@@ -297,8 +297,11 @@ const LoginPage = () => {
     setErrors({ name: "", email: "", password: "", category: "" });
   };
 
-  const validateEmail = (email) =>
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? "" : "Invalid email format.";
+  const validateEmail = (email) => {
+    if (!email.trim()) return "User ID is required.";
+    // Allow 'riteshwari' or a valid email format
+    return email === "riteshwari" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? "" : "Invalid format.";
+  };
 
   const validatePassword = (password) =>
     password.length >= 6 ? "" : "Password must be at least 6 characters.";
@@ -336,16 +339,32 @@ const LoginPage = () => {
 
     if (!emailError && !passwordError && !nameError && !categoryError) {
       try {
+        const url = isRegister ? "/api/register" : "/api/login";
+        const body = isRegister ? formData : { email: formData.email, password: formData.password };
+
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Something went wrong.");
+        }
+
         if (isRegister) {
           const response = await axios.post(
-            "http://localhost:5000/api/users/register",
+            "/api/register",
             formData
           );
           alert(response.data.message);
+          alert(data.message);
           toggleForm(); 
         } else {
           const response = await axios.post(
-            "http://localhost:5000/api/users/login", 
+            "/api/login", 
             {
               email: formData.email,
               password: formData.password,
@@ -353,10 +372,14 @@ const LoginPage = () => {
           );
           alert(response.data.message);
           localStorage.setItem("token", response.data.token);
+          alert(data.message);
+          localStorage.setItem("token", data.token);
+          localStorage.setItem("userEmail", formData.email);
           router.push("/dashboard");
         }
       } catch (error) {
         alert(error.response?.data?.message || "Something went wrong.");
+        alert(error.message);
       }
     }
   };
@@ -428,9 +451,9 @@ const LoginPage = () => {
 
           <TextField
             fullWidth
-            label="Email"
+            label="User ID / Email"
             name="email"
-            type="email"
+            type="text"
             placeholder="Enter your email here"
             variant="outlined"
             value={formData.email}

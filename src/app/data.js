@@ -2,13 +2,13 @@ import { Man2, Man3 } from "@mui/icons-material";
 
 export const images = [
   {
-    title: "Nagpur",
-    alt: "Nagpur",
-    day: "Monday",
-    time: "10:20",
-    location: "Near Ram Mandir",
+    title: "Central Facility Building, MIHAN",
+    alt: "MIHAN Tech Park",
+    day: "Monday - Saturday",
+    time: "08:00 - 20:00",
+    location: "MIHAN SEZ, Nagpur",
     num: "8411915054",
-    image: "/a.jpg",
+    image: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80",
     items: [
       {
         src: "/tomato.jpg",
