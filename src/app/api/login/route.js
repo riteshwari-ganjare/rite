@@ -1,8 +1,5 @@
 import { NextResponse } from 'next/server';
-import mongoose from 'mongoose';
-
-// MongoDB connection URI for the Canteen Management database
-const MONGODB_URI = 'mongodb://localhost:27017/Canteen_management';
+import { connectToDatabase, mongoose } from '@/app/lib/mongoose';
 
 // Define a Mongoose Schema for Users
 const UserSchema = new mongoose.Schema({
@@ -22,15 +19,9 @@ const LoginHistorySchema = new mongoose.Schema({
 const User = mongoose.models.User || mongoose.model('User', UserSchema);
 const LoginHistory = mongoose.models.LoginHistory || mongoose.model('LoginHistory', LoginHistorySchema);
 
-async function ensureConnected() {
-  if (mongoose.connection.readyState === 0) {
-    await mongoose.connect(MONGODB_URI);
-  }
-}
-
 export async function GET() {
   try {
-    await ensureConnected();
+    await connectToDatabase();
     return NextResponse.json(
       {
         message: 'Login API is active.',
@@ -49,7 +40,7 @@ export async function GET() {
 
 export async function POST(req) {
   try {
-    await ensureConnected();
+    await connectToDatabase();
 
     const { email, password } = await req.json();
 
@@ -89,4 +80,3 @@ export async function POST(req) {
     );
   }
 }
-

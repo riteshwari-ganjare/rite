@@ -1,8 +1,5 @@
 import { NextResponse } from 'next/server';
-import mongoose from 'mongoose';
-
-// MongoDB connection URI for the Canteen Management database
-const MONGODB_URI = 'mongodb://localhost:27017/Canteen_management';
+import { connectToDatabase, mongoose } from '@/app/lib/mongoose';
 
 // Define a Mongoose Schema for Users
 const UserSchema = new mongoose.Schema({
@@ -15,15 +12,9 @@ const UserSchema = new mongoose.Schema({
 // Prevent model re-definition during Next.js hot reloads
 const User = mongoose.models.User || mongoose.model('User', UserSchema);
 
-async function ensureConnected() {
-  if (mongoose.connection.readyState === 0) {
-    await mongoose.connect(MONGODB_URI);
-  }
-}
-
 export async function POST(req) {
   try {
-    await ensureConnected();
+    await connectToDatabase();
 
     const { name, email, password, category } = await req.json();
 
@@ -48,4 +39,3 @@ export async function POST(req) {
     );
   }
 }
-
