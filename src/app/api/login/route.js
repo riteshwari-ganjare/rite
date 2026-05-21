@@ -1,23 +1,9 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
-import { connectToDatabase, mongoose } from '@/app/lib/mongoose';
-
-// Define a Mongoose Schema for Users
-const UserSchema = new mongoose.Schema({
-  name: String,
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  category: String,
-});
-
-// Define a Mongoose Schema for login history
-const LoginHistorySchema = new mongoose.Schema({
-  user: String,
-  loginAt: { type: Date, default: Date.now },
-});
-
-// Prevent model re-definition during Next.js hot reloads
-const User = mongoose.models.User || mongoose.model('User', UserSchema);
-const LoginHistory = mongoose.models.LoginHistory || mongoose.model('LoginHistory', LoginHistorySchema);
+import { connectToDatabase } from '@/app/lib/mongoose';
+import { User, LoginHistory } from '@/app/models/User';
+import mongoose from 'mongoose';
 
 export async function GET() {
   try {

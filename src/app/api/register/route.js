@@ -1,16 +1,8 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
-import { connectToDatabase, mongoose } from '@/app/lib/mongoose';
-
-// Define a Mongoose Schema for Users
-const UserSchema = new mongoose.Schema({
-  name: String,
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  category: String,
-});
-
-// Prevent model re-definition during Next.js hot reloads
-const User = mongoose.models.User || mongoose.model('User', UserSchema);
+import { connectToDatabase } from '@/app/lib/mongoose';
+import { User } from '@/app/models/User';
 
 export async function POST(req) {
   try {

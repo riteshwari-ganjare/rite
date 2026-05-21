@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/app/lib/mongoose';
 import Item from '@/app/models/Item';

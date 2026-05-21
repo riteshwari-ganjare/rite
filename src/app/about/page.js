@@ -1,7 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { Box, Typography, Card, CardContent, CardMedia, Grid, Container, Divider } from "@mui/material";
-import Head from "next/head";
 import Image from "next/image";
 
 const AboutUs = () => {
@@ -41,14 +40,6 @@ const AboutUs = () => {
 
   return (
     <>
-      <Head>
-        <title>About Us | Fresh Veggies</title>
-        <meta name="description" content="Learn more about our mission, values, and team." />
-        <meta property="og:title" content="About Us" />
-        <meta property="og:description" content="Discover our story, mission, and vision for doorstep services." />
-        <meta name="robots" content="index, follow" />
-      </Head>
-
       <Box
         sx={{
           backgroundImage: "url('/Home.png')",

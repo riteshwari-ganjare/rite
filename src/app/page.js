@@ -5,7 +5,6 @@ import { Box, Container, Typography, Grid, Divider, Card, CircularProgress } fro
 import Link from "next/link";
 import Image from "next/image";
 import dynamic from "next/dynamic";
-import Head from "next/head";
 import { images, data, bot, items } from "./data";
 import * as page1 from "./page1";
 import Front from "@/components/Front";
@@ -124,26 +123,6 @@ const Page = () => {
 
   return (
     <>
-      <Head>
-        <meta name="description" content={`Find fresh ${selectedCategory || 'vegetables'} near you. Explore offerings by [Your Name].`} />
-        <title>{selectedCategory ? `${selectedCategory} - Local Fresh Produce | [Your Name]` : `Local Fresh Produce | [Your Name]`}</title>
-        <meta property="og:title" content={selectedCategory ? `${selectedCategory} - Local Fresh Produce | [Your Name]` : `Local Fresh Produce | [Your Name]`} />
-        <meta property="og:description" content={`Explore a wide range of fresh ${selectedCategory || 'vegetables'} near you, curated by [Your Name].`} />
-
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Person",
-              "name": "riteshwari ganjare",
-              "url": currentUrl,
-              "description": "Find fresh vegetables and produce curated by riteshwari ganjare.",
-            }),
-          }}
-        />
-      </Head>
-
       <Front items={dynamicItems} images={dynamicImages} data={data} />
 
       {/* Removed the ImageSlider section */}

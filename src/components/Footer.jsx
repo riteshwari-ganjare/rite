@@ -137,6 +137,9 @@ const Footer = () => {
                 Katol, Nagpur,
                 <br /> Maharashtra, India <br />
                 - 441302
+                Central Facility Building,
+                <br /> MIHAN SEZ, Nagpur,
+                <br /> Maharashtra 441108, India
               </address>
             </Grid>
             <Grid item xs={12} md={3} sx={{ padding: '10px 0' }}>
