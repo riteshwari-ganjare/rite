@@ -1,2 +1,22 @@
-/* placeholder premium/compact styles (most styling is inline in page.js) */
+.selection-section {
+  background: rgba(255, 255, 255, 0.01);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
 
+.selection-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.selection-form .MuiTextField-root {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+}
+
+.selection-form .MuiSelect-root {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  padding: 4px 12px;
+}

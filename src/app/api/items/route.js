@@ -9,12 +9,14 @@ export async function GET(req) {
     await connectToDatabase();
     const { searchParams } = new URL(req.url);
     const type = searchParams.get('type');
+    const validTypes = ['food', 'drink', 'cake', 'icecream'];
 
-    if (type !== 'food' && type !== 'drink') {
-      return NextResponse.json({ message: 'type must be food or drink' }, { status: 400 });
+    if (type && !validTypes.includes(type)) {
+      return NextResponse.json({ message: `Type must be one of: ${validTypes.join(', ')}` }, { status: 400 });
     }
 
-    const items = await Item.find({ type }).sort({ createdAt: -1 }).lean();
+    const query = type ? { type } : {};
+    const items = await Item.find(query).sort({ createdAt: -1 }).lean();
     return NextResponse.json({ items }, { status: 200 });
   } catch (error) {
     return NextResponse.json({ message: 'Internal Server Error', error: error.message }, { status: 500 });
@@ -25,10 +27,10 @@ export async function POST(req) {
   try {
     await connectToDatabase();
     const { type, name, description, image, price, createdBy } = await req.json();
+    const validTypes = ['food', 'drink', 'cake', 'icecream'];
 
-
-    if (!type || !name || (type !== 'food' && type !== 'drink')) {
-      return NextResponse.json({ message: 'Invalid payload' }, { status: 400 });
+    if (!type || !name || !validTypes.includes(type)) {
+      return NextResponse.json({ message: 'Invalid payload: category and name are required' }, { status: 400 });
     }
 
     const item = await Item.create({

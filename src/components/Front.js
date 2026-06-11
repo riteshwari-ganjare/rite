@@ -1,16 +1,22 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Box, Typography, Grid, TextField, Autocomplete, Button } from "@mui/material";
+import { Box, Typography, Grid, TextField, Autocomplete, Button, Chip, Divider } from "@mui/material";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
 import { ArrowForward } from '@mui/icons-material';
 import Image from "next/image";
 
-const Front = ({ images, items, data }) => {
-  const [selectedItem, setSelectedItem] = useState(null);
+const BRANCHES = ['Central Facility Building', 'Mihan Branch', 'Tech Park Canteen', 'Remote Site A'];
+
+const todayISO = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+};
+
+const Front = ({ images, items, data, onBranchSelect, branchOptions }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [currentTitle, setCurrentTitle] = useState("");
-  const [highlightTime, setHighlightTime] = useState(false);
   const [lc, setLc] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -33,13 +39,6 @@ const Front = ({ images, items, data }) => {
   }, [items]);
 
   useEffect(() => {
-    const highlightTimer = setInterval(() => {
-      setHighlightTime((prev) => !prev);
-    }, 3000);
-    return () => clearInterval(highlightTimer);
-  }, []);
-
-  useEffect(() => {
     const autoSlideTimer = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % data.length);
     }, 5000);
@@ -47,8 +46,13 @@ const Front = ({ images, items, data }) => {
   }, [data.length]);
 
   const handleSelectionChange = useCallback((event, value) => {
-    setSelectedItem(value);
-  }, []);
+    if (value && onBranchSelect) {
+      onBranchSelect(value.name || value.title);
+    }
+  }, [onBranchSelect]);
+
+  // Use the menu details for the currently selected branch passed from page.js
+  const activeInfo = images && images.length > 0 ? images[0] : null;
 
   return (
     <>
@@ -60,43 +64,65 @@ const Front = ({ images, items, data }) => {
           {currentTitle}
         </Typography>
         <Box sx={{ marginTop: "16px", width: "80%", maxWidth: "600px", borderRadius: "8px" }}>
-          <Autocomplete options={images} getOptionLabel={(option) => option.title} renderInput={(params) => (
-            <TextField {...params} variant="outlined" placeholder="Search By Place" aria-label="Search by Title" inputProps={{ ...params.inputProps, style: { color: "#000" } }} sx={{ backgroundColor: "white", "& .MuiOutlinedInput-root": { borderRadius: "8px", "& fieldset": { borderColor: "#fff" }, "&:hover fieldset": { borderColor: "#FF7E5F" }, "&.Mui-focused fieldset": { borderColor: "#FF7E5F" } }, "& .MuiInputLabel-root": { color: "#000" }, width: "100%" }} InputProps={{ ...params.InputProps, startAdornment: <LocationOnIcon sx={{ color: "#FF7E5F" }} /> }} />
-          )} onChange={handleSelectionChange} sx={{ width: "100%" }} />
+          <Autocomplete
+            options={branchOptions}
+            getOptionLabel={(option) => option.title}
+            filterOptions={(opts, { inputValue }) =>
+              opts.filter(o => o.title.toLowerCase().includes(inputValue.toLowerCase()))
+            }
+            renderOption={(props, option) => (
+              <Box component="li" {...props} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <LocationOnIcon sx={{ color: '#FF7E5F', fontSize: 18 }} />
+                <Box>
+                  <Typography sx={{ fontWeight: 700, fontSize: 14 }}>{option.title}</Typography>
+                  <Typography sx={{ fontSize: 11, color: '#888' }}>{option.address}</Typography>
+                </Box>
+              </Box>
+            )}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                variant="outlined"
+                placeholder="Search branch..."
+                inputProps={{ ...params.inputProps, style: { color: "#000" } }}
+                sx={{ backgroundColor: "white", "& .MuiOutlinedInput-root": { borderRadius: "8px", "& fieldset": { borderColor: "#fff" }, "&:hover fieldset": { borderColor: "#FF7E5F" }, "&.Mui-focused fieldset": { borderColor: "#FF7E5F" } }, width: "100%" }}
+                InputProps={{ ...params.InputProps, startAdornment: <LocationOnIcon sx={{ color: "#FF7E5F", mr: 1 }} /> }}
+              />
+            )}
+            onChange={handleSelectionChange}
+            sx={{ width: "100%" }}
+          />
         </Box>
-        <Box sx={{ display: "flex", justifyContent: "flex-end", width: "100%", marginTop: "20px" }}>
-          {selectedItem && (
-            <Box sx={{ padding: "16px", color: "white", borderRadius: "8px", width: { xs: "100%", sm: "80%" }, display: "flex", flexDirection: { xs: "column", sm: "row" }, justifyContent: "space-between" }}>
-              <Box sx={{ flex: 1, marginBottom: { xs: "20px", sm: "0" } }}>
-                <Typography variant="h6" sx={{ fontWeight: "bold", marginBottom: "8px", color: "#FF7E5F" }}>{selectedItem.title}</Typography>
-                <Grid container spacing={2}>
-                  <Grid item xs={12}>
-                    <Typography variant="body1" sx={{ display: "flex", alignItems: "center", gap: "8px", color: "white" }}>
-                      <CalendarTodayIcon sx={{ color: "#FF7E5F" }} /> Date: {selectedItem.day}
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Typography variant="body1" sx={{ display: "flex", alignItems: "center", gap: "8px", color: "white" }}>
-                      <AccessTimeIcon sx={{ color: "#FF7E5F" }} /> Time: {selectedItem.time}
-                    </Typography>
-                  </Grid>
-                </Grid>
-              </Box>
-              <Box sx={{ flex: 1 }}>
-                <Typography variant="h6" sx={{ fontWeight: "bold", marginBottom: "8px", color: "#FF7E5F" }}>Location</Typography>
-                <Typography variant="body1" sx={{ display: "flex", alignItems: "center", gap: "8px", color: "white" }}>
-                  <LocationOnIcon sx={{ color: "#FF7E5F" }} /> Location: {selectedItem.location}
-                </Typography>
-              </Box>
+
+        {activeInfo && (
+          <Box sx={{ width: { xs: '90%', sm: '80%' }, maxWidth: 700, mt: 2, p: 2.5, borderRadius: '12px', background: 'rgba(0,0,0,0.55)', border: '1px solid rgba(255,126,95,0.3)', backdropFilter: 'blur(8px)' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+              <LocationOnIcon sx={{ color: '#FF7E5F' }} />
+              <Typography variant="h6" sx={{ fontWeight: 800, color: '#FF7E5F' }}>{activeInfo.location}</Typography>
             </Box>
-          )}
-        </Box>
+            <Divider sx={{ borderColor: 'rgba(255,126,95,0.2)', mb: 1.5 }} />
+            <Grid container spacing={2} sx={{ mb: 1.5 }}>
+              <Grid item xs={6}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CalendarTodayIcon sx={{ color: '#FF7E5F', fontSize: 16 }} />
+                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>{activeInfo.day}</Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={6}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <AccessTimeIcon sx={{ color: '#FF7E5F', fontSize: 16 }} />
+                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>Opens at {activeInfo.time}</Typography>
+                </Box>
+              </Grid>
+            </Grid>
+          </Box>
+        )}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, padding: "10px", justifyContent: "center" }}>
           <Typography variant="h6" sx={{ color: "#fff", fontWeight: "bold", letterSpacing: "1px", transition: "color 0.3s ease-in-out", "&:hover": { color: "#FF7E5F" } }}>Want to make your Business Online?</Typography>
           <Button sx={{ backgroundColor: "#FF645A", transform: "scale(1.05)", boxShadow: "0px 4px 14px rgba(255, 94, 74, 0.4)", color: "#fff", fontWeight: "600", textTransform: "none", borderRadius: "8px", transition: "transform 0.3s ease, box-shadow 0.3s ease", "&:hover": { backgroundColor: "#FF645A", transform: "scale(1.0)", boxShadow: "0px 4px 14px rgba(255, 94, 74, 0.4)", color: "#fff" }, "& .MuiButton-endIcon": { fontSize: "1.2rem" }}} endIcon={<ArrowForward />} size="small" onClick={() => setLc((prev) => !prev)}>Let's Connect</Button>
         </Box>
       </Box>
-      {lc && (
+      {/* {lc && (
         <>
           <Box sx={{ width: "100%", display: "flex", justifyContent: "center", alignItems: "center", margin: "20px", fontWeight: "bold" }}>
             {data[currentIndex]?.des}
@@ -107,7 +133,7 @@ const Front = ({ images, items, data }) => {
             </Box>
           </Box>
         </>
-      )}
+      )} */}
     </>
   );
 };

@@ -141,7 +141,7 @@ const ServicePage = () => {
             Why Choose Us?
           </Typography>
           <Typography variant="body1" sx={{ color: "#A3A8B2", maxWidth: "600px", margin: "0 auto" }}>
-            Our team is committed to delivering high-quality services tailored to your business needs. From web development to software and mobile apps, we offer comprehensive solutions designed to help you thrive in today’s digital world.
+            Our team is committed to delivering high-quality services tailored to your business needs. Our canteen services are available across major locations including Central Facility Building, Mihan Branch, Tech Park Canteen, and Remote Site A.
           </Typography>
         </Box>
 

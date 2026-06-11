@@ -3,6 +3,8 @@ export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/app/lib/mongoose';
 import DailyMenu from '@/app/models/DailyMenu';
+import mongoose from 'mongoose';
+import Item from '@/app/models/Item'; // Ensure Item model is registered for populate
 
 export async function GET(req) {
   try {
@@ -10,16 +12,16 @@ export async function GET(req) {
 
     const { searchParams } = new URL(req.url);
     const date = searchParams.get('date');
-    // timeSlot is no longer part of the query
     const userEmail = searchParams.get('userEmail');
+    const location = searchParams.get('location') || 'Central Facility Building';
 
-    if (!date || !userEmail) {
-      return NextResponse.json({ message: 'date and userEmail are required' }, { status: 400 });
+    if (!date || !userEmail || !location) {
+      return NextResponse.json({ message: 'date, userEmail, and location are required' }, { status: 400 });
     }
 
-    const menu = await DailyMenu.findOne({ userEmail, date }).populate('items').lean();
+    const menu = await DailyMenu.findOne({ userEmail, date, location }).populate('items').lean();
 
-    return NextResponse.json({ menu: menu || { userEmail, date, startTime: '09:00', items: [] } }, { status: 200 }); // Default startTime for new menus
+    return NextResponse.json({ menu: menu || { userEmail, date, location, startTime: '09:00', items: [] } }, { status: 200 });
 
   } catch (error) {
     return NextResponse.json({ message: 'Internal Server Error', error: error.message }, { status: 500 });
@@ -30,17 +32,23 @@ export async function POST(req) {
   try {
     await connectToDatabase();
 
-    const { userEmail, date, startTime, items } = await req.json();
+    const { userEmail, date, location, startTime, items } = await req.json();
 
-    if (!userEmail || !date || !startTime || !Array.isArray(items)) {
-      return NextResponse.json({ message: 'userEmail, date, startTime, items[] are required' }, { status: 400 });
+    if (!userEmail || !date || !location || !startTime || !Array.isArray(items)) {
+      return NextResponse.json({ message: 'userEmail, date, location, startTime, items[] are required' }, { status: 400 });
+    }
+
+    // Validate that all strings in items are valid ObjectIds
+    const isValidIds = items.every(id => mongoose.Types.ObjectId.isValid(id));
+    if (!isValidIds) {
+      return NextResponse.json({ message: 'One or more selected items have invalid IDs.' }, { status: 400 });
     }
 
     // Use findOneAndUpdate with upsert: true
-    // This finds the menu for the user/date/slot and updates the items list.
+    // This finds the menu for the user/date/location and updates the items list.
     // If it doesn't exist, it creates it.
     const updatedMenu = await DailyMenu.findOneAndUpdate(
-      { userEmail, date }, // Query only by userEmail and date
+      { userEmail, date, location }, // Query by userEmail, date, and location
       { items, startTime }, // Update items and startTime
       { new: true, upsert: true, setDefaultsOnInsert: true, runValidators: true }
     );
@@ -54,6 +62,10 @@ export async function POST(req) {
         error: error.message 
       }, { status: 409 });
     }
-    return NextResponse.json({ message: 'Internal Server Error', error: error.message }, { status: 500 });
+    console.error('Daily Menu POST Error:', error);
+    return NextResponse.json({ 
+      message: error.message || 'Failed to update menu.', 
+      error: error.message 
+    }, { status: 500 });
   }
 }

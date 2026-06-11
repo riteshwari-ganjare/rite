@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, Suspense } from "react";
-import { Box, Container, Typography, Grid, Divider, Card, CircularProgress } from "@mui/material";
+import { Box, Container, Typography, Grid, Divider, Card, CircularProgress, Chip } from "@mui/material";
 import Link from "next/link";
 import Image from "next/image";
 import dynamic from "next/dynamic";
-import { images, data, bot, items } from "./data";
+import { images, data, items } from "./data";
 import * as page1 from "./page1";
 import Front from "@/components/Front";
 
@@ -50,164 +50,159 @@ const OfferImage1 = React.memo(({ src, alt }) => (
 OfferImage1.displayName = "OfferImage1";
 
 const Page = () => {
-  const [selectedCategory, setSelectedCategory] = useState(null); // Start with no category selected
   const [showAll, setShowAll] = useState(false);
-  const [dynamicImages, setDynamicImages] = useState(images);
+  const [location, setLocation] = useState('Central Facility Building');
+  const [allItems, setAllItems] = useState([]);
   const [dynamicItems, setDynamicItems] = useState(items);
+  const [dynamicImages, setDynamicImages] = useState([]);
+  const [activeFilter, setActiveFilter] = useState('all');
+  const [allBranches, setAllBranches] = useState([
+    { name: 'Central Facility Building', address: 'MIHAN SEZ, Nagpur, Maharashtra 441108' },
+    { name: 'Mihan Branch', address: 'Sector 20, Mihan, Nagpur, Maharashtra 441108' },
+    { name: 'Tech Park Canteen', address: 'IT Park, Parsodi, Nagpur, Maharashtra 440022' },
+    { name: 'Remote Site A', address: 'Wardha Road, Outer Ring Road, Nagpur 441108' }
+  ]);
 
-  // Get current URL safely for SEO script
-  const [currentUrl, setCurrentUrl] = useState("");
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      setCurrentUrl(window.location.href);
-    }
-  }, []);
+  const FILTERS = [
+    { label: 'All', value: 'all' },
+    { label: 'Food', value: 'food' },
+    { label: 'Drink', value: 'drink' },
+    { label: 'Cake', value: 'cake' },
+    { label: 'Ice Cream', value: 'icecream' },
+  ];
 
   useEffect(() => {
-    async function fetchLatestMenu() {
+    async function fetchLatestMenu(loc) {
       try {
-        const res = await fetch(`/api/daily-menu?date=${todayISO()}&userEmail=riteshwari`);
-
-        if (!res.ok) {
-          throw new Error('Failed to fetch daily menu');
-        }
-
+        const res = await fetch(`/api/daily-menu?date=${todayISO()}&userEmail=riteshwari&location=${encodeURIComponent(loc)}`);
+        if (!res.ok) throw new Error();
         const result = await res.json();
-        
-        if (result && result.menu && result.menu.items && result.menu.items.length > 0 && result.menu.startTime) {
-          const todaysSpecials = {
-            title: "Today's Specials",
-            // Add day, time, location for Front component if needed, otherwise it will be undefined
-            day: "Today",
-            time: result.menu.startTime, // Display the startTime from the fetched menu
-            location: "Central Facility Building, MIHAN, Nagpur",
-            alt: "Today's Specials",
-            image: result.menu.items[0].image || "/download.png",
-            items: result.menu.items.map(item => ({
-              title: item.name,
-              price: `Rs. ${item.price || 0}`,
-              src: item.image || "/download.png",
-              rating: "5.0",
-              alt: item.name
-            }))
-          };
-          
-          setDynamicImages([todaysSpecials]); // Only Today's Specials
-          
-          // Update the "We Provide" slider items with canteen items
-          setDynamicItems(result.menu.items.map(item => ({
+        if (result?.menu?.items?.length > 0) {
+          const mapped = result.menu.items.map(item => ({
+            id: item._id,
             title: item.name,
-            description: item.description || "Freshly prepared for you."
-          })));
-          // Automatically select Today's Specials to show canteen items instead of default vegetables
-          setSelectedCategory("Today's Specials");
+            price: `Rs. ${item.price || 0}`,
+            src: item.image || '/download.png',
+            rating: '5.0',
+            alt: item.name,
+            type: item.type || 'food',
+          }));
+          setAllItems(mapped);
+          setDynamicItems(result.menu.items.map(item => ({ title: item.name, description: item.description || 'Freshly prepared for you.' })));
+          setDynamicImages([{ title: "Today's Specials", location: loc, time: result.menu.startTime, day: 'Today', items: mapped.map(i => ({ title: i.title, price: i.price })) }]);
+          setActiveFilter('all');
         } else {
-          throw new Error('No items found');
+          setAllItems([]);
+          setDynamicItems([]);
+          setDynamicImages([]);
         }
-      } catch (e) { 
-        console.error("Failed to fetch menu:", e);
-        // Fallback to empty state on error or missing data
-        if (dynamicImages.length > 0 || dynamicItems.length > 0) {
-          setDynamicImages([]); // No categories to display
-          setDynamicItems([]); // No items for the "We Provide" slider
-          setSelectedCategory(null); // No category selected
-        }
+      } catch (error) {
+        console.error("Failed to fetch daily menu:", error);
+        setAllItems([]); setDynamicItems([]); setDynamicImages([]);
       }
     }
-    fetchLatestMenu();
-  }, []); // Empty dependency array to run once on mount
+    fetchLatestMenu(location);
+  }, [location, allBranches]); // Added allBranches to dependencies to re-fetch if branches change and location needs adjustment
 
-  // Dynamic filtering based on selection rather than hardcoded string
-  const filteredItemsForDisplay = dynamicImages.find((category) => category.title === selectedCategory)?.items || [];
-  const visibleItemsForDisplay = showAll ? filteredItemsForDisplay : filteredItemsForDisplay.slice(0, 4);
+  useEffect(() => {
+    // Load custom branches from local storage on mount
+    const saved = localStorage.getItem('canteen_branches');
+    if (saved) {
+      try {
+        const parsedBranches = JSON.parse(saved);
+        if (Array.isArray(parsedBranches) && parsedBranches.length > 0) {
+          setAllBranches(parsedBranches);
+          // If the current location is not in the loaded branches, default to the first one
+          if (!parsedBranches.some(b => b.name === location)) {
+            setLocation(parsedBranches[0].name);
+          }
+        }
+      } catch (e) { console.error("Failed to parse branches from localStorage", e); }
+    }
+  }, []); // Run once on mount
+
+  const filteredItems = activeFilter === 'all' ? allItems : allItems.filter(i => i.type === activeFilter);
+  const visibleItems = showAll ? filteredItems : filteredItems.slice(0, 4);
 
   return (
     <>
-      <Front items={dynamicItems} images={dynamicImages} data={data} />
+      <Front
+        items={dynamicItems}
+        images={dynamicImages} // This still passes the daily menu details for the current location
+        branchOptions={allBranches.map(branch => ({ title: branch.name, name: branch.name, address: branch.address }))} // Pass all branches for Autocomplete
+        data={data}
+        onBranchSelect={(branchName) => {
+          setLocation(branchName);
+          window.scrollTo({ top: 400, behavior: 'smooth' });
+        }}
+      />
 
       {/* Removed the ImageSlider section */}
       
       <Box sx={{ background: "#000" }}> </Box>
-      <Container >
-        <Box sx={{ ...page1.b1, mt: 8, mb: 4, alignItems: 'center' }}>
-          <Box>
-            <Typography variant="h4" sx={{ color: '#1a1a1a', fontWeight: 800, letterSpacing: '-0.02em' }}>
-              {selectedCategory === "Today's Specials" ? "Chef's Daily Specials" : "Canteen Menu"}
-            </Typography>
-            <Typography variant="body1" sx={{ color: '#666' }}>
-              Freshly prepared at Central Facility Building, MIHAN
-            </Typography>
+      <Container>
+        <Box sx={{ mt: 8, mb: 4, textAlign: 'center' }}>
+          <Typography variant="h4" sx={{ color: '#1a1a1a', fontWeight: 900, letterSpacing: '-0.04em', mb: 0.5 }}>
+            Chef's Daily Specials — {location}
+          </Typography>
+          <Typography variant="body2" sx={{ color: '#999', mb: 3, textTransform: 'uppercase', letterSpacing: 2, fontSize: 10, fontWeight: 700 }}>Handpicked for a Royal Experience</Typography>
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'center' }}>
+            {FILTERS.map(f => (
+              <Chip
+                key={f.value}
+                label={f.label}
+                onClick={() => { setActiveFilter(f.value); setShowAll(false); }}
+                sx={{
+                  fontWeight: 800,
+                  fontSize: '13px',
+                  bgcolor: activeFilter === f.value ? '#FF7E5F' : '#fff',
+                  border: activeFilter === f.value ? 'none' : '1px solid rgba(0,0,0,0.08)',
+                  color: activeFilter === f.value ? '#fff' : '#333',
+                  '&:hover': { bgcolor: activeFilter === f.value ? '#FF4A35' : 'rgba(0,0,0,0.04)' },
+                  cursor: 'pointer',
+                  px: 1, height: 36
+                }}
+              />
+            ))}
           </Box>
-          {selectedCategory === "Today's Specials" && filteredItemsForDisplay.length > 4 && (
-            <Link href="/" passHref>
-              <Typography sx={{ ...page1.seeMore, color: '#FF7E5F', fontWeight: 700 }} onClick={() => setShowAll(prev => !prev)}>
-                {showAll ? "Show Less" : "See All"}
-              </Typography>
-            </Link>
-          )}
         </Box>
 
         <Grid container spacing={2}>
-          {visibleItemsForDisplay.length > 0 ? (
-            visibleItemsForDisplay.map((image, index) => (
-            <Grid item xs={12} sm={6} md={3} lg={3} key={index}>
-              <Card
-                sx={{
-                  position: 'relative',
-                  display: "flex",
-                  flexDirection: "column",
-                  borderRadius: "24px",
-                  overflow: "hidden",
-                  height: "340px",
-                  boxShadow: "none",
-                  border: '1px solid rgba(0,0,0,0.05)',
-                  transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-                  "&:hover": { boxShadow: "0px 30px 60px rgba(0, 0, 0, 0.12)", transform: 'translateY(-12px)' },
-                }}
-              >
-                <Box sx={{ height: '200px', overflow: 'hidden' }}>
-                  <OfferImage1 src={image.src} alt={image.alt} />
-                </Box>
-                <Box sx={{ padding: "20px", flex: 1, position: "relative" }}>
-                  <Typography variant="h6" sx={{ fontSize: '20px', fontWeight: 800, mb: 1, color: '#1a1a1a' }}>
-                    {image.title}
-                  </Typography>
-                  <Typography variant="body1" sx={{ color: "#FF7E5F", fontWeight: 800, fontSize: '18px' }}>
-                    {image.price.includes('Rs.') ? image.price : `₹ ${image.price}`}
-                  </Typography>
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      bottom: "20px",
-                      right: "20px",
-                      backgroundColor: "rgba(76, 175, 80, 0.1)",
-                      color: "#2E7D32",
-                      borderRadius: "8px",
-                      fontSize: "12px",
-                      fontWeight: 900,
-                      px: 1.5, py: 0.75
-                    }}
-                  >
-                    ★ {image.rating}
+          {visibleItems.length > 0 ? (
+            visibleItems.map((image, index) => (
+              <Grid item xs={12} sm={6} md={3} key={index}>
+                <Card sx={{ position: 'relative', display: 'flex', flexDirection: 'column', borderRadius: '20px', overflow: 'hidden', height: '300px', boxShadow: '0 4px 20px rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.05)', transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)', '&:hover': { boxShadow: '0px 15px 35px rgba(0,0,0,0.08)', transform: 'translateY(-6px)' } }}>
+                  <Box sx={{ height: '160px', overflow: 'hidden' }}>
+                    <OfferImage1 src={image.src} alt={image.alt} />
                   </Box>
-                </Box>
-              </Card>
-            </Grid>
+                  <Box sx={{ padding: '20px', flex: 1, position: 'relative' }}>
+                    <Typography variant="h6" sx={{ fontSize: '16px', fontWeight: 900, mb: 0.2, color: '#1a1a1a' }}>{image.title}</Typography>
+                    <Typography variant="body1" sx={{ color: '#FF7E5F', fontWeight: 900, fontSize: '18px' }}>
+                      {image.price.includes('Rs.') ? image.price : `₹ ${image.price}`}
+                    </Typography>
+                    <Box sx={{ position: 'absolute', bottom: '20px', right: '20px', backgroundColor: 'rgba(76,175,80,0.1)', color: '#2E7D32', borderRadius: '8px', fontSize: '12px', fontWeight: 900, px: 1.5, py: 0.75 }}>★ {image.rating}</Box>
+                  </Box>
+                </Card>
+              </Grid>
             ))
           ) : (
             <Grid item xs={12} sx={{ textAlign: 'center', py: 10 }}>
-              <Typography variant="h5" sx={{ color: '#ced4da', fontWeight: 700 }}>
-                Our Kitchen is currently preparing today's specials.
-              </Typography>
+              <Typography variant="h5" sx={{ color: '#ced4da', fontWeight: 700 }}>Our Kitchen is currently preparing today's specials.</Typography>
             </Grid>
           )}
         </Grid>
+        {filteredItems.length > 4 && (
+          <Box sx={{ textAlign: 'center', mt: 3 }}>
+            <Chip label={showAll ? 'Show Less' : `See All (${filteredItems.length})`} onClick={() => setShowAll(p => !p)}
+              sx={{ fontWeight: 700, bgcolor: '#FF7E5F', color: '#fff', px: 2, cursor: 'pointer', '&:hover': { bgcolor: '#FF4A35' } }} />
+          </Box>
+        )}
       </Container>
 
       <Divider sx={{ width: "100%", my: 2 }} />
 
       <Suspense fallback={<CircularProgress color="primary" />}>
-        <Available images={dynamicImages} />
+        <Available images={allBranches.map(branch => ({ title: branch.name, address: branch.address }))} />
       </Suspense>
     </>
   );

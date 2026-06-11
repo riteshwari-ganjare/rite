@@ -10,7 +10,9 @@ import {
   TextField,
   Button,
   Chip,
+  LinearProgress,
   Grid,
+  Paper,
   Card,
   CardContent,
   CardMedia,
@@ -28,6 +30,8 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ErrorIcon from '@mui/icons-material/Error';
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -52,8 +56,10 @@ const todayISO = () => {
 function normalizeItems(items) {
   const set = new Set();
   (items || []).forEach((item) => {
-    const id = String(item._id ?? item);
-    set.add(id);
+    const id = item?._id ?? item;
+    if (id && typeof id === 'string' && id.length === 24) {
+      set.add(id);
+    }
   });
   return set;
 }
@@ -61,14 +67,28 @@ function normalizeItems(items) {
 const DashboardPage = () => {
   const [tab, setTab] = useState('food');
   const [date, setDate] = useState(todayISO());
-  const [startTime, setStartTime] = useState('09:00'); // Default start time
+  const [location, setLocation] = useState('Central Facility Building');
+
+  const [branches, setBranches] = useState([
+    { name: 'Central Facility Building', address: 'MIHAN SEZ, Nagpur, Maharashtra 441108' },
+    { name: 'Mihan Branch', address: 'Sector 20, Mihan, Nagpur, Maharashtra 441108' },
+    { name: 'Tech Park Canteen', address: 'IT Park, Parsodi, Nagpur, Maharashtra 440022' },
+    { name: 'Remote Site A', address: 'Wardha Road, Outer Ring Road, Nagpur 441108' }
+  ]);
+  const [branchDialogOpen, setBranchDialogOpen] = useState(false);
+  const [newBranchName, setNewBranchName] = useState('');
+  const [newBranchAddress, setNewBranchAddress] = useState('');
+
+  const [startTime, setStartTime] = useState('09:00');
   const [userEmail, setUserEmail] = useState('');
 
   const [items, setItems] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   const [selectedIds, setSelectedIds] = useState(new Set());
+  const [selectionKey, setSelectionKey] = useState('');
 
   const [addOpen, setAddOpen] = useState(false);
   const [newType, setNewType] = useState('food');
@@ -80,9 +100,9 @@ const DashboardPage = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogTitle, setDialogTitle] = useState('');
   const [dialogMessage, setDialogMessage] = useState('');
+  const [dialogType, setDialogType] = useState('success'); // 'success' | 'error'
 
   useEffect(() => {
-    // Retrieve the actual User ID/Email stored during login
     const email = typeof window !== 'undefined' ? localStorage.getItem('userEmail') : null;
     setUserEmail(email || '');
   }, []);
@@ -91,22 +111,24 @@ const DashboardPage = () => {
     return Array.from(selectedIds);
   }, [selectedIds]);
 
-  async function loadData() {
+  async function loadData(resetSelection = false) {
     setLoading(true);
     try {
       const [itemsRes, menuRes] = await Promise.all([
         fetch(`/api/items?type=${tab}`).then((r) => r.json()),
         userEmail
-          ? fetch(`/api/daily-menu?date=${encodeURIComponent(date)}&userEmail=${encodeURIComponent(userEmail)}`).then((r) => r.json())
+          ? fetch(`/api/daily-menu?date=${encodeURIComponent(date)}&userEmail=${encodeURIComponent(userEmail)}&location=${encodeURIComponent(location)}`).then((r) => r.json())
           : Promise.resolve({ menu: { items: [] } }),
       ]);
 
       setItems(itemsRes.items || []);
 
-      const menuItems = menuRes?.menu?.items || [];
-      setStartTime(menuRes?.menu?.startTime || '09:00'); // Set startTime from fetched menu
-      const idSet = normalizeItems(menuItems);
-      setSelectedIds(idSet);
+      if (resetSelection) {
+        const menuItems = menuRes?.menu?.items || [];
+        setStartTime(menuRes?.menu?.startTime || '09:00');
+        setSelectedIds(normalizeItems(menuItems));
+        setSelectionKey(`${date}__${location}`);
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -115,15 +137,34 @@ const DashboardPage = () => {
   }
 
   useEffect(() => {
-    // Load when tab/date/user changes
-    if (!userEmail) {
-      // still allow viewing items, but selection can't persist
-      setLoading(false);
-      return;
+    const saved = localStorage.getItem('canteen_branches');
+    if (saved) {
+      try {
+        setBranches(JSON.parse(saved));
+      } catch (e) { console.error("Failed to parse branches", e); }
     }
-    loadData();
+  }, []);
+
+  const handleAddBranch = () => {
+    if (newBranchName.trim() && !branches.some(b => b.name === newBranchName.trim())) {
+      const updated = [...branches, { name: newBranchName.trim(), address: newBranchAddress.trim() }];
+      setBranches(updated);
+      localStorage.setItem('canteen_branches', JSON.stringify(updated));
+      setLocation(newBranchName.trim());
+      setNewBranchName('');
+      setNewBranchAddress('');
+      setBranchDialogOpen(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!userEmail) { setLoading(false); return; }
+    const key = `${date}__${location}`;
+    const isNewContext = key !== selectionKey;
+    loadData(isNewContext);
+    setSearchTerm('');
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tab, date, userEmail]); // Removed timeSlot from dependencies
+  }, [tab, date, location, userEmail]);
 
   const toggleSelect = (item) => {
     const id = String(item._id);
@@ -145,7 +186,8 @@ const DashboardPage = () => {
         body: JSON.stringify({
           userEmail,
           date,
-          startTime, // Send startTime
+          location,
+          startTime,
           items: selectedItemsArray,
         }),
       });
@@ -155,14 +197,16 @@ const DashboardPage = () => {
         throw new Error(result.message || 'Failed to save');
       }
 
-      await loadData();
+      await loadData(false);
+      setDialogType('success');
       setDialogTitle('Success');
-      setDialogMessage('Daily menu updated successfully!');
+      setDialogMessage(`Daily menu for ${location} updated successfully!`);
       setDialogOpen(true);
     } catch (e) {
       console.error(e);
-      setDialogTitle('Error');
-      setDialogMessage('Failed to save menu: ' + e.message);
+      setDialogTitle('Save Failed');
+      setDialogType('error');
+      setDialogMessage(e.message);
       setDialogOpen(true);
     } finally {
       setSaving(false);
@@ -176,7 +220,6 @@ const DashboardPage = () => {
     setNewImage('');
     setNewPrice('');
     setAddOpen(true);
-
   };
 
   const handleImageChange = (e) => {
@@ -211,98 +254,208 @@ const DashboardPage = () => {
       }
 
       setAddOpen(false);
-      await loadData();
+      await loadData(false);
+      setDialogType('success');
       setDialogTitle('Success');
       setDialogMessage('New item created successfully!');
       setDialogOpen(true);
     } catch (e) {
       console.error(e);
+      setDialogType('error');
       setDialogTitle('Error');
       setDialogMessage('Failed to create item: ' + e.message);
       setDialogOpen(true);
     }
   };
 
+  const filteredItems = useMemo(() => {
+    return items.filter(it => 
+      it.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (it.description && it.description.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+  }, [items, searchTerm]);
+
+  const handleSelectAll = () => {
+    const next = new Set(selectedIds);
+    filteredItems.forEach(it => next.add(String(it._id)));
+    setSelectedIds(next);
+  };
+
+  const handleClearAll = () => {
+    setSelectedIds(new Set());
+  };
+
   return (
     <Box
       sx={{
         minHeight: '100vh',
-        bgcolor: '#0B1220',
-        color: '#EAF0FF',
-        p: { xs: 2, md: 3 },
+        bgcolor: '#F8F9FB',
+        color: '#1A1A1A',
+        p: { xs: 1, md: 4 },
       }}
     >
       <Box
         sx={{
-          maxWidth: 1100,
+          maxWidth: 1200,
           mx: 'auto',
-          borderRadius: 6,
-          border: '1px solid rgba(255,255,255,0.08)',
+          borderRadius: '24px',
+          border: '1px solid rgba(0,0,0,0.08)',
           overflow: 'hidden',
-          boxShadow: '0 40px 100px rgba(0,0,0,0.5)',
-          background: 'linear-gradient(145deg, #12192b 0%, #080d1a 100%)',
+          boxShadow: '0 10px 40px rgba(0,0,0,0.04), 0 2px 4px rgba(0,0,0,0.02)',
+          background: '#FFFFFF',
         }}
       >
-        <Box sx={{ p: 3, borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap', background: 'rgba(255,255,255,0.02)' }}>
-          <Box>
-            <Typography variant="h4" sx={{ fontWeight: 900, letterSpacing: '-0.03em', background: 'linear-gradient(90deg, #FF7E5F, #FEB47B)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+        <Box sx={{ p: 3, borderBottom: '1px solid rgba(0,0,0,0.05)', bgcolor: '#fff' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3, flexWrap: 'wrap', gap: 2 }}>
+            <Box>
+              <Typography variant="h5" sx={{ fontWeight: 900, letterSpacing: '-0.03em', background: 'linear-gradient(90deg, #FF7E5F, #FEB47B)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               Canteen Console
             </Typography>
-            <Typography variant="body2" sx={{ color: 'rgba(234,240,255,0.5)', fontWeight: 500, mt: 0.5 }}>
-              Manage daily availability for Central Facility Building
-            </Typography>
+              <Typography variant="caption" sx={{ color: 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: 1, fontWeight: 600 }}>
+                Manage Daily Availability & Specials
+              </Typography>
+            </Box>
+            <Box sx={{ textAlign: 'right' }}>
+               <Typography variant="caption" sx={{ fontWeight: 800, color: '#FF7E5F', mb: 0.5, display: 'block' }}>
+                MENU CAPACITY: {selectedIds.size} / 12
+               </Typography>
+               <LinearProgress 
+                 variant="determinate" 
+                 value={Math.min((selectedIds.size / 12) * 100, 100)} 
+                 sx={{ width: 140, height: 6, borderRadius: 3, bgcolor: 'rgba(255,126,95,0.1)', '& .MuiLinearProgress-bar': { bgcolor: '#FF7E5F' } }} 
+               />
+            </Box>
           </Box>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-            <TextField
-              variant="filled"
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              sx={{ bgcolor: 'rgba(255,255,255,0.05)', borderRadius: 2, input: { color: '#EAF0FF', py: 1.5 } }}
-            />
-            <TextField
-              variant="filled"
-              type="time"
-              label="Start Time"
-              value={startTime}
-              onChange={(e) => setStartTime(e.target.value)}
-              InputLabelProps={{ shrink: true }}
-              sx={{
-                bgcolor: 'rgba(255,255,255,0.05)', borderRadius: 2,
-                input: { color: '#EAF0FF', py: 1.5 },
-                '.MuiInputLabel-root': { color: 'rgba(234,240,255,0.5)', fontWeight: 700 }
-              }}
-            />
+          {/* Unified Configuration Form */}
+          <Paper 
+            elevation={0}
+            component="form" 
+            onSubmit={(e) => { e.preventDefault(); saveMenu(); }}
+            sx={{ 
+              p: 1.5, 
+              borderRadius: '12px', 
+              bgcolor: '#F9FAFB', 
+              border: '1px solid #EDEDED',
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 2, 
+              flexWrap: 'wrap' 
+            }}
+          >
+            <Box sx={{ flex: 1, minWidth: '200px' }}>
+              <Typography variant="caption" sx={{ color: '#FF7E5F', fontWeight: 700, ml: 1, mb: 0.5, display: 'block' }}>DATE</Typography>
+              <TextField
+                fullWidth
+                variant="standard"
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                sx={{ px: 1, borderRadius: '8px', bgcolor: 'transparent', input: { color: '#1A1A1A', py: 1, fontWeight: 600 } }}
+                InputProps={{ disableUnderline: true }}
+              />
+            </Box>
+
+            <Box sx={{ flex: 1.5, minWidth: '240px' }}>
+              <Typography variant="caption" sx={{ color: '#FF7E5F', fontWeight: 700, ml: 1, mb: 0.2, display: 'block' }}>BRANCH LOCATION</Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1, borderRadius: '8px', bgcolor: 'transparent' }}>
+                <Select
+                  fullWidth
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  variant="standard"
+                  sx={{ color: '#1A1A1A', py: 0.2, fontWeight: 600 }}
+                  disableUnderline
+                >
+                  {branches.map((b) => (
+                    <MenuItem key={b.name} value={b.name}>{b.name}</MenuItem>
+                  ))}
+                </Select>
+                <IconButton 
+                  size="small"
+                  onClick={() => setBranchDialogOpen(true)}
+                  sx={{ color: '#FF7E5F', bgcolor: 'rgba(255,126,95,0.1)' }}
+                >
+                  <AddIcon fontSize="small" />
+                </IconButton>
+              </Box>
+            </Box>
+
+            <Box sx={{ flex: 1, minWidth: '150px' }}>
+              <Typography variant="caption" sx={{ color: '#FF7E5F', fontWeight: 700, ml: 1, mb: 0.5, display: 'block' }}>START TIME</Typography>
+              <TextField
+                fullWidth
+                variant="standard"
+                type="time"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+                sx={{ px: 1, borderRadius: '8px', bgcolor: 'transparent', input: { color: '#1A1A1A', py: 1, fontWeight: 600 } }}
+                InputProps={{ disableUnderline: true }}
+              />
+            </Box>
+
             <Button
-              variant="contained" size="large"
-              onClick={saveMenu}
+              type="submit"
+              variant="contained"
               disabled={!userEmail || saving}
-              sx={{ borderRadius: 3, px: 4, bgcolor: '#FF7E5F', fontWeight: 800, '&:hover': { bgcolor: '#FF4A35' } }}
+              sx={{ 
+                  borderRadius: '10px', 
+                px: 4, 
+                  height: '48px',
+                alignSelf: 'flex-end',
+                bgcolor: '#FF7E5F', 
+                fontWeight: 800, 
+                  boxShadow: '0 4px 15px rgba(255,126,95,0.2)',
+                '&:hover': { bgcolor: '#FF4A35' } 
+              }}
             >
-              {saving ? 'Saving...' : 'Save'}
+              {saving ? 'Saving...' : 'Sync Menu'}
             </Button>
-          </Box>
+          </Paper>
         </Box>
 
-        <Box sx={{ p: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap', mb: 1 }}>
-            <Tabs value={tab} onChange={(_, v) => setTab(v)} textColor="inherit" indicatorColor="secondary" sx={{ '& .MuiTabs-indicator': { backgroundColor: '#FF7E5F' } }}>
+        <Box sx={{ p: 3, pt: 2 }}>
+          <Box sx={{ 
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap', mb: 2, 
+            position: 'sticky', top: 0, bgcolor: '#fff', zIndex: 10, py: 1
+          }}>
+            <TextField 
+              placeholder="Filter items..." 
+              size="small" 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              sx={{ 
+                width: { xs: '100%', sm: 250 },
+                bgcolor: '#F5F5F5', borderRadius: '12px', input: { color: '#333' } 
+              }} 
+            />
+            <Tabs value={tab} onChange={(_, v) => setTab(v)} textColor="primary" indicatorColor="primary" sx={{ '& .MuiTabs-indicator': { backgroundColor: '#FF7E5F', height: 3, borderRadius: '3px' }, '& .MuiTab-root': { fontWeight: 700, color: '#666' }, '& .Mui-selected': { color: '#FF7E5F !important' } }}>
               <Tab value="food" label="Food" />
               <Tab value="drink" label="Drink" />
+              <Tab value="cake" label="Cakes" />
+              <Tab value="icecream" label="Ice Creams" />
             </Tabs>
 
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
               {!userEmail && (
-                <Chip size="small" label="Login to save" sx={{ bgcolor: 'rgba(255,126,95,0.18)', color: '#FFCEBC' }} />
+                <Chip size="small" label="Login to save" sx={{ bgcolor: 'rgba(255,126,95,0.1)', color: '#FF7E5F' }} />
               )}
-              <Button variant="outlined" onClick={openAdd} sx={{ borderColor: 'rgba(255,126,95,0.7)', color: '#FFCEBC' }} startIcon={<AddIcon />}>
+              <Button variant="outlined" onClick={openAdd} sx={{ borderRadius: '10px', borderColor: 'rgba(255,126,95,0.7)', color: '#FFCEBC', '&:hover': { borderColor: '#FF7E5F' } }} startIcon={<AddIcon />}>
                 Add Item
               </Button>
             </Box>
           </Box>
 
-          <Divider sx={{ mb: 2, borderColor: 'rgba(255,255,255,0.08)' }} />
+          <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+            <Button size="small" onClick={handleSelectAll} sx={{ color: '#666', fontWeight: 700 }}>
+              Select All
+            </Button>
+            <Button size="small" onClick={handleClearAll} sx={{ color: '#666', fontWeight: 700 }}>
+              Clear Selection
+            </Button>
+          </Box>
+
+          <Divider sx={{ mb: 3, borderColor: 'rgba(0,0,0,0.06)' }} />
 
           {loading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
@@ -310,7 +463,7 @@ const DashboardPage = () => {
             </Box>
           ) : (
             <Grid container spacing={2}>
-              {items.map((item) => {
+              {filteredItems.map((item) => {
                 const selected = selectedIds.has(String(item._id));
                 return (
                   <Grid item xs={12} sm={6} md={4} key={String(item._id)}>
@@ -318,45 +471,25 @@ const DashboardPage = () => {
                       onClick={() => toggleSelect(item)}
                       sx={{
                         cursor: 'pointer',
-                        bgcolor: selected ? 'rgba(255,126,95,0.12)' : 'rgba(255,255,255,0.04)',
-                        border: selected ? '1px solid rgba(255,126,95,0.75)' : '1px solid rgba(255,255,255,0.08)',
-                        borderRadius: 3,
-                        transition: 'transform .15s ease, border-color .15s ease',
-                        '&:hover': { transform: 'translateY(-2px)' },
+                        bgcolor: selected ? 'rgba(255,126,95,0.04)' : '#FFFFFF',
+                        border: selected ? '1px solid #FF7E5F' : '1px solid rgba(0,0,0,0.06)',
+                        borderRadius: '16px',
+                        transition: 'all .2s ease',
+                        '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 8px 20px rgba(0,0,0,0.06)' },
                       }}
                     >
-                      <CardMedia component="img" height="120" image={item.image || '/download.png'} alt={item.name} />
+                      <CardMedia component="img" height="90" image={item.image || '/download.png'} alt={item.name} sx={{ objectFit: 'cover' }} />
                       <CardContent sx={{ p: 1.5 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
-                          <Typography sx={{ fontWeight: 800, fontSize: 14 }} noWrap>
+                          <Typography sx={{ fontWeight: 800, fontSize: 13, color: '#1A1A1A' }} noWrap>
                             {item.name}
                           </Typography>
-                          <Chip size="small" label={selected ? 'Selected' : 'Select'} sx={{ bgcolor: selected ? 'rgba(255,126,95,0.22)' : 'rgba(255,255,255,0.08)', color: '#EAF0FF' }} />
+                          <Chip size="small" label={selected ? '✓' : '+'} sx={{ minWidth: 24, height: 24, borderRadius: '6px', bgcolor: selected ? '#FF7E5F' : '#F5F5F5', color: selected ? '#FFF' : '#666', fontWeight: 900 }} />
                         </Box>
-
-                        <Typography variant="body2" sx={{ color: 'rgba(234,240,255,0.7)', mt: 0.5, minHeight: 20 }} noWrap>
-                          {item.description || ''}
-                        </Typography>
-
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 1 }}>
-                          <Typography variant="body2" sx={{ fontWeight: 700, color: '#FFCEBC' }}>
+                          <Typography variant="body2" sx={{ fontWeight: 800, color: '#FF7E5F', fontSize: 13 }}>
                             Rs. {item.price}
                           </Typography>
-                          <Button
-                            size="small"
-                            variant={selected ? 'contained' : 'outlined'}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleSelect(item);
-                            }}
-                            sx={{
-                              bgcolor: selected ? '#FF7E5F' : 'transparent',
-                              borderColor: selected ? '#FF7E5F' : 'rgba(255,126,95,0.6)',
-                              color: selected ? '#0B1220' : '#FFCEBC',
-                            }}
-                          >
-                            {selected ? 'Added' : 'Add'}
-                          </Button>
                         </Box>
                       </CardContent>
                     </Card>
@@ -365,7 +498,7 @@ const DashboardPage = () => {
               })}
               {items.length === 0 && (
                 <Grid item xs={12}>
-                  <Typography sx={{ color: 'rgba(234,240,255,0.7)' }}>No items found. Click “Add Item”.</Typography>
+                  <Typography sx={{ color: '#999' }}>No items found. Click &quot;Add Item&quot;.</Typography>
                 </Grid>
               )}
             </Grid>
@@ -380,6 +513,8 @@ const DashboardPage = () => {
             <ToggleButtonGroup value={newType} exclusive onChange={(_, v) => v && setNewType(v)} size="small" sx={{ alignSelf: 'flex-start' }}>
               <ToggleButton value="food">Food</ToggleButton>
               <ToggleButton value="drink">Drink</ToggleButton>
+              <ToggleButton value="cake">Cake</ToggleButton>
+              <ToggleButton value="icecream">Ice Cream</ToggleButton>
             </ToggleButtonGroup>
 
             <TextField label="Name" value={newName} onChange={(e) => setNewName(e.target.value)} size="small" />
@@ -438,13 +573,69 @@ const DashboardPage = () => {
         </DialogActions>
       </Dialog>
 
-      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
-        <DialogTitle>{dialogTitle}</DialogTitle>
+      {/* Add Branch Dialog */}
+      <Dialog open={branchDialogOpen} onClose={() => setBranchDialogOpen(false)} fullWidth maxWidth="xs">
+        <DialogTitle sx={{ fontWeight: 900 }}>Add New Branch/Location</DialogTitle>
         <DialogContent>
-          <Typography>{dialogMessage}</Typography>
+          <Box sx={{ pt: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <TextField 
+              fullWidth 
+              label="Branch Name" 
+              value={newBranchName} 
+              onChange={(e) => setNewBranchName(e.target.value)} 
+              placeholder="e.g. South Campus Canteen"
+              autoFocus 
+            />
+            <TextField 
+              fullWidth 
+              label="Branch Address" 
+              value={newBranchAddress} 
+              onChange={(e) => setNewBranchAddress(e.target.value)} 
+              placeholder="Enter full address"
+              multiline
+              rows={2}
+            />
+          </Box>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDialogOpen(false)}>Close</Button>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => setBranchDialogOpen(false)}>Cancel</Button>
+          <Button 
+            onClick={handleAddBranch} 
+            variant="contained" 
+            disabled={!newBranchName.trim()}
+            sx={{ bgcolor: '#FF7E5F', '&:hover': { bgcolor: '#FF4A35' } }}
+          >
+            Add Branch
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog 
+        open={dialogOpen} 
+        onClose={() => setDialogOpen(false)}
+        PaperProps={{ sx: { borderRadius: '20px', p: 1, maxWidth: '400px' } }}
+      >
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5, fontWeight: 900, pb: 1 }}>
+          {dialogType === 'success' ? (
+            <CheckCircleIcon sx={{ color: '#4caf50', fontSize: 28 }} />
+          ) : (
+            <ErrorIcon sx={{ color: '#f44336', fontSize: 28 }} />
+          )}
+          {dialogTitle}
+        </DialogTitle>
+        <DialogContent sx={{ pb: 1 }}>
+          <Typography variant="body1" sx={{ color: '#555', fontWeight: 500 }}>
+            {dialogMessage}
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button 
+            onClick={() => setDialogOpen(false)} 
+            variant="contained" 
+            sx={{ borderRadius: '10px', bgcolor: dialogType === 'success' ? '#4caf50' : '#f44336', '&:hover': { bgcolor: dialogType === 'success' ? '#388e3c' : '#d32f2f' } }}
+          >
+            Got it
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>

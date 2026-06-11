@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const ItemSchema = new mongoose.Schema(
   {
-    type: { type: String, enum: ['food', 'drink'], required: true, index: true },
+    type: { type: String, enum: ['food', 'drink', 'cake', 'icecream'], required: true, index: true },
     name: { type: String, required: true, trim: true, index: true },
     description: { type: String, default: '' },
     image: { type: String, default: '' }, // can be URL or filename
@@ -13,4 +13,3 @@ const ItemSchema = new mongoose.Schema(
 );
 
 export default mongoose.models.Item || mongoose.model('Item', ItemSchema);
-

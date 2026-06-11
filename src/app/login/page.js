@@ -12,8 +12,12 @@ import {
   FormControl,
   Divider,
   InputAdornment,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
-import { Email, Lock } from "@mui/icons-material"; 
+import { Email, Lock, CheckCircle, Error as ErrorIcon } from "@mui/icons-material"; 
 
 const LoginPage = () => {
   const [isRegister, setIsRegister] = useState(false);
@@ -29,6 +33,7 @@ const LoginPage = () => {
     password: "",
     category: "",
   });
+  const [modal, setModal] = useState({ open: false, title: "", message: "", type: "success" });
 
   const router = useRouter(); 
 
@@ -96,16 +101,16 @@ const LoginPage = () => {
         }
 
         if (isRegister) {
-          alert(data.message);
+          setModal({ open: true, title: "Registration Successful", message: data.message, type: "success" });
           toggleForm(); 
         } else {
-          alert(data.message);
+          setModal({ open: true, title: "Welcome Back", message: data.message, type: "success" });
           localStorage.setItem("token", data.token);
           localStorage.setItem("userEmail", formData.email);
           router.push("/dashboard");
         }
       } catch (error) {
-        alert(error.message);
+        setModal({ open: true, title: "Action Failed", message: error.message, type: "error" });
       }
     }
   };
@@ -284,6 +289,30 @@ const LoginPage = () => {
             : "Don't have an account? Register here."}
         </Typography>
       </Box>
+
+      {/* Status Modal */}
+      <Dialog 
+        open={modal.open} 
+        onClose={() => setModal({ ...modal, open: false })}
+        PaperProps={{ sx: { borderRadius: '16px', p: 1, maxWidth: '380px', width: '100%' } }}
+      >
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5, fontWeight: 800 }}>
+          {modal.type === 'success' ? <CheckCircle sx={{ color: '#4caf50' }} /> : <ErrorIcon sx={{ color: '#f44336' }} />}
+          {modal.title}
+        </DialogTitle>
+        <DialogContent>
+          <Typography sx={{ color: '#666', fontWeight: 500 }}>{modal.message}</Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button 
+            onClick={() => setModal({ ...modal, open: false })}
+            variant="contained"
+            sx={{ borderRadius: '8px', bgcolor: modal.type === 'success' ? '#FF7E5F' : '#333', '&:hover': { bgcolor: '#FF4A35' } }}
+          >
+            Continue
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
